@@ -1,29 +1,16 @@
-use std::fs::{create_dir_all, File};
-use std::io::{BufReader, Seek};
-use std::path::Path;
-
-use bevy::a11y::AccessibilityPlugin;
-use bevy::asset::FileAssetIo;
-use bevy::audio::Source;
-use bevy::diagnostic::DiagnosticsPlugin;
-use bevy::input::InputPlugin;
-use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use bevy::scene::ScenePlugin;
-use bevy::time::TimePlugin;
-use bevy::ui::widget::UiImageSize;
-use bevy::utils::HashSet;
 use bevy::window::{PresentMode, WindowTheme};
-use bevy::winit::WinitPlugin;
-use binrw::BinRead;
-use bsa::v104::ReaderV104;
-use bsa::{read, Reader};
-use esm::RecordHeader;
-use rayon::prelude::{ParallelBridge, ParallelIterator};
+
+use bsa_loader::BsaAssetPlugin;
+use config::{GameConfigPlugin, GameConfiguration};
+
+mod bsa_loader;
+mod config;
 mod esm;
 
 fn main() {
     App::new()
+        .add_plugins((GameConfigPlugin, BsaAssetPlugin))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -39,7 +26,7 @@ fn main() {
                     ..Default::default()
                 })
                 .set(AssetPlugin {
-                    asset_folder: "Data".to_string(),
+                    asset_folder: "DataPacked".to_string(),
                     ..Default::default()
                 }),
         )
@@ -47,14 +34,22 @@ fn main() {
         .run();
 }
 
-const MENU_BACKGROUND_IMAGE: &str = "Fallout - Textures2.bsa/main_background.dds";
-const MENU_TITLE_IMAGE: &str = "Fallout - Textures2.bsa/main_title.dds";
+const MENU_BACKGROUND_IMAGE: &str = "textures/interface/main/main_background.dds";
+const MENU_TITLE_IMAGE: &str = "textures/interface/main/main_title.dds";
 const MENU_AUDIO: &str = "MainTitle.wav";
 
-fn setup() {}
+fn setup_menu(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    config: Res<GameConfiguration>,
+) {
+    let background_path = format!(
+        "/textures/interface/main/{}.dds",
+        config.loading.sMainMenuBackground
+    );
 
-fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let background_image: Handle<Image> = asset_server.load(MENU_BACKGROUND_IMAGE);
+
     let title_image: Handle<Image> = asset_server.load(MENU_TITLE_IMAGE);
     let menu_sound: Handle<AudioSource> = asset_server.load(MENU_AUDIO);
 

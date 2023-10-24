@@ -20,6 +20,8 @@ esl = "0.18.0"
 espers = "0.1.0"
 rayon = "1.8.0"
 serde = { version = "1.0.189", features = ["derive"] }
+serde_ini = "0.2.0"
+tokio = { version = "1.33.0", features = ["full"] }
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
