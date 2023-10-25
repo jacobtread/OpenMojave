@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ab_glyph = "0.2.22"
 bevy = { version = "0.11", features = [
     "dynamic_linking",
     "dds",
@@ -23,6 +24,7 @@ bmfont_parser = "0.2.0"
 bsa = "0.2.1"
 esl = "0.18.0"
 espers = "0.1.0"
+owned_ttf_parser = "0.20.0"
 rayon = "1.8.0"
 serde = { version = "1.0.189", features = ["derive"] }
 serde_ini = "0.2.0"

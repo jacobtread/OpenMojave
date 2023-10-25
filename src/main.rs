@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy::window::{PresentMode, WindowTheme};
 
-use bsa_loader::BsaAssetPlugin;
 use config::{GameConfigPlugin, GameConfiguration};
+use loaders::bsa::BsaAssetPlugin;
 
-mod bsa_loader;
 mod config;
 mod esm;
+mod loaders;
 
 fn main() {
     App::new()
@@ -47,6 +47,8 @@ fn setup_menu(
         "/textures/interface/main/{}.dds",
         config.loading.sMainMenuBackground
     );
+
+    let a = asset_server.load_untyped("textures/fonts/glow_monofonto_medium.fnt");
 
     let background_image: Handle<Image> = asset_server.load(MENU_BACKGROUND_IMAGE);
 

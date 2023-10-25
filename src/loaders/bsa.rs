@@ -1,3 +1,5 @@
+//! Asset loader for .bsa packed asset bundles
+
 use crate::config::GameConfiguration;
 use bevy::utils::HashMap;
 use bevy::{asset::AssetIo, prelude::*};
@@ -8,6 +10,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+
+use super::fnt::FntFontLoader;
 
 pub struct BsaAssetPlugin;
 
@@ -32,6 +36,7 @@ impl Plugin for BsaAssetPlugin {
         let server = AssetServer::new(asset_io);
 
         app.insert_resource(server);
+        app.init_asset_loader::<FntFontLoader>();
     }
 }
 
