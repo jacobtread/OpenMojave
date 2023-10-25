@@ -1,14 +1,22 @@
 //! Font loader for the .fnt format
 
-use std::{io::Seek, path::Path, sync::Arc};
+use std::{
+    io::{Read, Seek},
+    path::Path,
+    sync::Arc,
+};
 
 use bevy::{
     asset::{AssetLoader, LoadedAsset},
-    prelude::{dbg, debug, info},
+    prelude::{dbg, debug, info, Image},
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     text::{Font, FontLoader},
 };
 
 use binrw::{BinRead, BinReaderExt, BinResult, NullString};
+use owned_ttf_parser::RawFaceTables;
+
+use crate::loaders::tex::load_tex_asset_2d;
 
 #[derive(Default)]
 pub struct FntFontLoader;
@@ -21,7 +29,7 @@ impl AssetLoader for FntFontLoader {
     ) -> bevy::utils::BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
             // Load bitmap font -> Convert font to otf format -> Use bevy font loader
-            load_bitmap_font(bytes, load_context).await.unwrap();
+            let image = load_bitmap_font(bytes, load_context).await.unwrap();
             // fnt.chars.
 
             // let texture = load_context
@@ -36,7 +44,7 @@ impl AssetLoader for FntFontLoader {
             // // debug!("Loaded font {:?}", fnt);
 
             // // Ok(())
-            // load_context.set_default_asset(LoadedAsset::new(fnt_font));
+            load_context.set_default_asset(LoadedAsset::new(image));
             Ok(())
         })
     }
@@ -86,7 +94,7 @@ struct BitmapFont {
 async fn load_bitmap_font<'a>(
     bytes: &[u8],
     load_context: &'a mut bevy::asset::LoadContext<'_>,
-) -> BinResult<()> {
+) -> BinResult<Image> {
     let mut r = std::io::Cursor::new(bytes);
 
     let font = BitmapFont::read(&mut r)?;
@@ -113,13 +121,7 @@ async fn load_bitmap_font<'a>(
         .await
         .expect("Font texture missing");
 
-    let mut r = std::io::Cursor::new(texture_bytes);
+    let font_image = load_tex_asset_2d(&texture_bytes).unwrap();
 
-    Ok(())
+    Ok(font_image)
 }
-
-fn load_bitmap_font_texture(bytes: &[u8]) {}
-
-/// Transform the custom game font format into something that can be used by
-/// the engine
-fn transform_font() {}

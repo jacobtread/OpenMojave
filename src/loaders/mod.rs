@@ -2,3 +2,4 @@
 
 pub mod bsa;
 pub mod fnt;
+pub mod tex;

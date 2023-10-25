@@ -48,7 +48,7 @@ fn setup_menu(
         config.loading.sMainMenuBackground
     );
 
-    let a = asset_server.load_untyped("textures/fonts/glow_monofonto_medium.fnt");
+    let font_image: Handle<Image> = asset_server.load("textures/fonts/glow_monofonto_medium.fnt");
 
     let background_image: Handle<Image> = asset_server.load(MENU_BACKGROUND_IMAGE);
 
@@ -96,6 +96,21 @@ fn setup_menu(
                             width: Val::Vw(35.),
                             height: Val::Vw(35.0 / 4.0),
                             aspect_ratio: Some(4.0),
+
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+                    parent.spawn(ImageBundle {
+                        image: UiImage {
+                            texture: font_image,
+                            ..Default::default()
+                        },
+                        style: Style {
+                            // left: Val::Vw(5.),
+                            width: Val::Px(256.),
+                            height: Val::Px(256.),
+                            aspect_ratio: Some(1.0),
 
                             ..Default::default()
                         },
