@@ -1212,12 +1212,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bmfont_parser"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eba6ac6c2c9d7cf52c28f038e8047297a8b8e7e7cf283e21bcbf1931ef7ae8c"
-
-[[package]]
 name = "bsa"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3104,15 +3098,14 @@ checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 name = "open-nv"
 version = "0.1.0"
 dependencies = [
- "ab_glyph",
  "bevy",
  "bevy_rapier3d",
  "binrw 0.12.0",
  "bitflags 2.4.1",
- "bmfont_parser",
  "bsa",
  "esl",
  "espers",
+ "nom",
  "owned_ttf_parser 0.20.0",
  "rayon",
  "serde",

@@ -5,8 +5,10 @@ use bevy::utils::HashMap;
 use bevy::{asset::AssetIo, prelude::*};
 use bsa::v104::ReaderV104;
 use bsa::Reader;
+use rayon::prelude::{ParallelBridge, ParallelIterator};
+use std::fs::create_dir_all;
 use std::io::BufReader;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -117,6 +119,27 @@ impl BsaAssetIo {
             // Add the handle mapping
             archive_handles.insert(archive.to_string(), Arc::new(Mutex::new(reader)));
         }
+
+        // NOTE: This is code to unpack all the assets
+        //
+        // let mut data_unpacked = Path::new("DataUnpacked");
+        // paths.iter().par_bridge().for_each(|(path, asset_path)| {
+        //     let out_path = data_unpacked.join(path);
+        //     if out_path.exists() {
+        //         return;
+        //     }
+        //     let handle = archive_handles
+        //         .get(&asset_path.archive)
+        //         .expect("Archive handle was missing");
+        //     let handle = &mut *handle.blocking_lock();
+        //     if let Some(parent) = out_path.parent() {
+        //         create_dir_all(parent).unwrap();
+        //     }
+        //     let mut out = std::fs::File::create(out_path).unwrap();
+        //     if let Err(err) = handle.extract(&asset_path.file, &mut out) {
+        //         error!("Failed to extract file {}: {}", path.display(), err);
+        //     }
+        // });
 
         Self {
             archive_handles,
