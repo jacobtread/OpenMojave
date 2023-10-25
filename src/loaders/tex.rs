@@ -15,7 +15,7 @@ impl AssetLoader for TexLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::utils::BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
-            let image = load_tex_asset_2d(bytes)?;
+            let (_, image) = load_tex_asset_2d(bytes)?;
             load_context.set_default_asset(LoadedAsset::new(image));
             Ok(())
         })
@@ -27,7 +27,7 @@ impl AssetLoader for TexLoader {
 }
 
 /// Attempts to load a texture asset from the provided bytes
-pub fn load_tex_asset_2d(bytes: &[u8]) -> Result<Image, bevy::asset::Error> {
+pub fn load_tex_asset_2d(bytes: &[u8]) -> Result<((u32, u32), Image), bevy::asset::Error> {
     // Buffer is too small to be a texture
     if bytes.len() < 8 {
         return Err(bevy::asset::Error::msg("Invalid texture file"));
@@ -71,5 +71,5 @@ pub fn load_tex_asset_2d(bytes: &[u8]) -> Result<Image, bevy::asset::Error> {
         TextureFormat::Rgba8Unorm,
     );
 
-    Ok(image)
+    Ok(((width, height), image))
 }

@@ -13,7 +13,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use super::fnt::FntFontLoader;
+use super::fnt::{BitmapFont, FntFontLoader};
 
 pub struct BsaAssetPlugin;
 
@@ -39,6 +39,7 @@ impl Plugin for BsaAssetPlugin {
 
         app.insert_resource(server);
         app.init_asset_loader::<FntFontLoader>();
+        app.add_asset::<BitmapFont>();
     }
 }
 
