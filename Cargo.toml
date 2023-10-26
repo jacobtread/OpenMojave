@@ -1,38 +1,10 @@
-[package]
-name = "open-nv"
-version = "0.1.0"
-edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = ["editor", "executor", "executor-wasm", "executor-android", "game"]
 
-[dependencies]
-bevy = { version = "0.11", features = [
-    "dynamic_linking",
-    "dds",
-    "symphonia-wav",
-    "symphonia-vorbis",
-    "wav",
-] }
-bevy_rapier3d = { version = "0.22.0", features = [
-    "simd-nightly",
-    "debug-render-3d",
-] }
-binrw = "0.12.0"
-bitflags = "2.4.1"
-bsa = "0.2.1"
-esl = "0.18.0"
-espers = "0.1.0"
-nom = "7.1.3"
-owned_ttf_parser = "0.20.0"
-rayon = "1.8.0"
-serde = { version = "1.0.189", features = ["derive"] }
-serde_ini = "0.2.0"
-tokio = { version = "1.33.0", features = ["full"] }
-
-# Enable a small amount of optimization in debug mode
-[profile.dev]
-opt-level = 1
-
-# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+# Optimize the engine in debug builds, but leave project's code non-optimized.
+# By using this technique, you can still debug you code, but engine will be fully
+# optimized and debug builds won't be terribly slow. With this option, you can 
+# compile your game in debug mode, which is much faster (at least x3), than release.
 [profile.dev.package."*"]
 opt-level = 3

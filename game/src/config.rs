@@ -1,9 +1,7 @@
+use serde::Deserialize;
 use std::fs::File;
 
-use bevy::prelude::{Plugin, Resource};
-use serde::Deserialize;
-
-#[derive(Deserialize, Resource)]
+#[derive(Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct GameConfiguration {
     pub general: General,
@@ -52,21 +50,10 @@ pub struct Archive {
     pub SArchiveList: String,
 }
 
-fn load_config() -> GameConfiguration {
+pub fn load_config() -> GameConfiguration {
     // TODO: Properly load configuration from Documents/My Games
     let file: String =
         std::fs::read_to_string("Fallout.ini").expect("Failed to read Fallout.ini configuration");
 
     serde_ini::from_str(&file).expect("Failed to load config")
-}
-
-/// Plugin which loads and attaches the game configuration
-/// to the ecs resources
-pub struct GameConfigPlugin;
-
-impl Plugin for GameConfigPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
-        let config = load_config();
-        app.insert_resource(config);
-    }
 }

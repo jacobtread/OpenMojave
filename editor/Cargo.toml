@@ -1,0 +1,10 @@
+
+[package]
+name = "editor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fyrox = { version = "0.32.0", path = "../../Fyrox" }
+fyroxed_base = "0.18.0"
+open_mojave = { path = "../game" }
