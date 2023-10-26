@@ -16,9 +16,6 @@ use fyrox::{
 use std::{io::Cursor, sync::Arc};
 
 pub fn set_default_font(ui: &mut UserInterface) {
-    // Select character set.
-    let character_set = Font::default_char_set();
-
     let fnt_bytes = std::fs::read("DataUnpacked/textures/fonts/glow_monofonto_medium.fnt").unwrap();
 
     let mut r = Cursor::new(fnt_bytes);
@@ -33,8 +30,6 @@ pub fn set_default_font(ui: &mut UserInterface) {
 
         String::from_utf8(name_bytes).expect("Font name invalid")
     };
-
-    println!("Font name: {}", font_name);
 
     let texture_path = format!(
         "DataUnpacked/textures/fonts/{}.tex",
@@ -81,10 +76,6 @@ pub fn set_default_font(ui: &mut UserInterface) {
         false,
     )
     .unwrap();
-    // Test to ensure texture works: It does!
-    // ImageBuilder::new(WidgetBuilder::new().with_width(256.).with_height(256.))
-    //     .with_texture(texture.clone())
-    //     .build(&mut ui.build_ctx());
 
     let texture = SharedTexture(Arc::new(Mutex::new(ResourceState::new_ok(texture))));
 
