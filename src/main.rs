@@ -61,7 +61,16 @@ fn try_spawn_menu_text(
     let my_font = fonts.get(&menu_text.font_handle);
 
     if let Some(my_font) = my_font {
-        my_font.spawn_text("Test", 50., 50., &mut commands);
+        my_font.spawn_text(
+            "A wide variety of weapon mods are available",
+            Vec3::new(-400., 30., 1.),
+            &mut commands,
+        );
+        my_font.spawn_text(
+            "from merchants for Guns, Energy Weapons",
+            Vec3::new(-400., 0., 1.),
+            &mut commands,
+        );
 
         menu_text.spawned = true;
     }
@@ -93,55 +102,55 @@ fn setup_menu(
     // 2D camera for the menu
     commands.spawn(Camera2dBundle::default());
 
-    commands
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .with_children(|parent| {
-            parent
-                .spawn(ImageBundle {
-                    image: UiImage {
-                        texture: background_image,
-                        ..Default::default()
-                    },
-                    style: Style {
-                        width: Val::Percent(100.),
-                        height: Val::Percent(100.),
-                        aspect_ratio: Some(16.0 / 9.0),
-                        justify_content: JustifyContent::SpaceBetween,
-                        align_items: AlignItems::Center,
-                        padding: UiRect::all(Val::Vw(2.)),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .with_children(|parent| {
-                    parent.spawn(ImageBundle {
-                        image: UiImage {
-                            texture: title_image,
-                            ..Default::default()
-                        },
-                        style: Style {
-                            // left: Val::Vw(5.),
-                            width: Val::Vw(35.),
-                            height: Val::Vw(35.0 / 4.0),
-                            aspect_ratio: Some(4.0),
+    // commands
+    //     .spawn(NodeBundle {
+    //         style: Style {
+    //             width: Val::Percent(100.),
+    //             height: Val::Percent(100.),
+    //             ..Default::default()
+    //         },
+    //         ..Default::default()
+    //     })
+    //     .with_children(|parent| {
+    //         parent
+    //             .spawn(ImageBundle {
+    //                 image: UiImage {
+    //                     texture: background_image,
+    //                     ..Default::default()
+    //                 },
+    //                 style: Style {
+    //                     width: Val::Percent(100.),
+    //                     height: Val::Percent(100.),
+    //                     aspect_ratio: Some(16.0 / 9.0),
+    //                     justify_content: JustifyContent::SpaceBetween,
+    //                     align_items: AlignItems::Center,
+    //                     padding: UiRect::all(Val::Vw(2.)),
+    //                     ..Default::default()
+    //                 },
+    //                 ..Default::default()
+    //             })
+    //             .with_children(|parent| {
+    //                 parent.spawn(ImageBundle {
+    //                     image: UiImage {
+    //                         texture: title_image,
+    //                         ..Default::default()
+    //                     },
+    //                     style: Style {
+    //                         // left: Val::Vw(5.),
+    //                         width: Val::Vw(35.),
+    //                         height: Val::Vw(35.0 / 4.0),
+    //                         aspect_ratio: Some(4.0),
 
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    });
-                });
-        });
+    //                         ..Default::default()
+    //                     },
+    //                     ..Default::default()
+    //                 });
+    //             });
+    //     });
 
     // Menu background audio
-    commands.spawn(AudioBundle {
-        source: menu_sound,
-        settings: PlaybackSettings::LOOP,
-    });
+    // commands.spawn(AudioBundle {
+    //     source: menu_sound,
+    //     settings: PlaybackSettings::LOOP,
+    // });
 }

@@ -2,6 +2,7 @@
 
 use std::{
     io::{Read, Seek},
+    ops::Mul,
     path::Path,
     sync::Arc,
 };
@@ -9,7 +10,8 @@ use std::{
 use bevy::{
     asset::{AssetLoader, LoadedAsset},
     prelude::{
-        dbg, debug, info, Commands, GlobalTransform, Handle, Image, Rect, Transform, Vec2, Vec3,
+        dbg, debug, info, Color, Commands, GlobalTransform, Handle, Image, Rect, Transform, Vec2,
+        Vec3,
     },
     reflect::{TypePath, TypeUuid},
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
@@ -21,7 +23,7 @@ use bevy::{
 use binrw::{BinRead, BinReaderExt, BinResult, NullString};
 use owned_ttf_parser::RawFaceTables;
 
-use crate::loaders::tex::load_tex_asset_2d;
+use crate::{config::Fonts, loaders::tex::load_tex_asset_2d};
 
 #[derive(Default)]
 pub struct FntFontLoader;
@@ -132,27 +134,27 @@ async fn load_bitmap_font<'a>(
 
     let mut atlas = TextureAtlas::new_empty(font_image, Vec2::new(width as f32, height as f32));
 
-    let mut glyph_atlas_map = HashMap::new();
     let mut glyphs = HashMap::new();
+
+    let texture_size = Vec2::new(width as f32, height as f32);
 
     for i in 0..256 {
         let glyph = &font.data[i];
 
-        let p0 = Vec2::new(glyph.top_left.x, glyph.top_left.y);
-        let p1 = Vec2::new(glyph.bottom_right.x, glyph.bottom_right.y);
+        let p0 = Vec2::new(glyph.top_left.x, glyph.top_left.y) * texture_size;
+        let p1 = Vec2::new(glyph.bottom_right.x, glyph.bottom_right.y) * texture_size;
 
-        info!("{:?}", p1 - p0);
+        let size = Vec2::new(glyph.width, glyph.height);
 
         let index = atlas.add_texture(Rect::from_corners(p0, p1));
 
         let id = GlyphId(i as u16);
 
-        glyph_atlas_map.insert(id, index);
         glyphs.insert(
             id,
             GlyphData {
-                width: glyph.width,
-                height: glyph.height,
+                texture_index: index,
+                size,
                 kerning: glyph.kerning,
                 ascent: glyph.ascent,
             },
@@ -166,7 +168,6 @@ async fn load_bitmap_font<'a>(
         font_size: font.font_size,
         name: font_name,
         atlas,
-        glyph_atlas_map,
         glyphs,
     };
 
@@ -182,8 +183,9 @@ pub struct GlyphId(u16);
 
 #[derive(Debug)]
 pub struct GlyphData {
-    pub width: f32,
-    pub height: f32,
+    pub texture_index: usize,
+    pub size: Vec2,
+
     pub kerning: f32,
     pub ascent: f32,
 }
@@ -195,9 +197,7 @@ pub struct BitmapFontData {
     pub name: String,
     /// Texture atlas
     pub atlas: Handle<TextureAtlas>,
-    /// Mapping between glyphs and textures
-    pub glyph_atlas_map: HashMap<GlyphId, usize>,
-    /// Glyph related data
+    /// Mapping between glyphs and data
     pub glyphs: HashMap<GlyphId, GlyphData>,
 }
 
@@ -207,33 +207,61 @@ pub struct BitmapFont {
     data: Arc<BitmapFontData>,
 }
 
+struct TextBundle {
+    text: String,
+    transform: Vec3,
+    scale: Vec3,
+    line_height: f32,
+    spacing: f32,
+}
+
+impl TextBundle {}
+
 impl BitmapFont {
-    pub fn spawn_text(&self, value: &str, x: f32, y: f32, commands: &mut Commands) {
-        let mut offset = 0.;
+    pub fn spawn_text(&self, value: &str, start: Vec3, commands: &mut Commands) {
+        // Default spacing between characters
+        let spacing = 1.5;
 
-        for char in value.chars() {
-            let id = GlyphId(char as u16);
-            let index = match self.data.glyph_atlas_map.get(&id) {
-                Some(index) => index,
-                None => continue,
-            };
+        let font_size = self.data.font_size;
+        info!("Font size: {}", font_size);
 
-            let glyph = &self.data.glyphs[&id];
+        value
+            .chars()
+            .filter_map(|char| {
+                let id = GlyphId(char as u16);
+                let data = self.data.glyphs.get(&id)?;
+                Some((char, data))
+            })
+            .fold(start.x, |char_x, (char, glyph)| {
+                // Space handling
+                if char == ' ' {
+                    return char_x + (spacing * 8.);
+                }
 
-            info!("Spawned sprite {:?}", glyph);
-            commands.spawn(SpriteSheetBundle {
-                transform: Transform {
-                    translation: Vec3::new(150.0, 0.0, 0.0),
-                    scale: Vec3::splat(40.0),
+                // Character aligned y offset
+                let char_y = (start.y - font_size / 2.) + glyph.ascent / 2.;
+
+                let transform = Transform {
+                    translation: Vec3::new(char_x, char_y, start.z),
+                    scale: Vec3::splat(1.),
+                    rotation: Default::default(),
+                };
+                let mut sprite = TextureAtlasSprite::new(glyph.texture_index);
+                let texture_atlas = self.data.atlas.clone();
+
+                sprite.custom_size = Some(glyph.size);
+                sprite.color = Color::LIME_GREEN;
+
+                commands.spawn(SpriteSheetBundle {
+                    transform,
+                    sprite,
+                    texture_atlas,
+
                     ..Default::default()
-                },
-                sprite: TextureAtlasSprite::new(*index),
-                texture_atlas: self.data.atlas.clone(),
+                });
 
-                ..Default::default()
+                // Compute the next character x position
+                char_x + glyph.size.x + spacing
             });
-
-            offset += glyph.width + 4.;
-        }
     }
 }
