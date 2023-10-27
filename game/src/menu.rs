@@ -24,6 +24,8 @@ use fyrox::{
     utils::into_gui_texture,
 };
 
+use crate::config::GameConfiguration;
+
 pub struct Menu {
     scene: MenuScene,
     root: Handle<UiNode>,
@@ -36,10 +38,14 @@ struct MenuScene {
 }
 
 impl Menu {
-    pub async fn new(context: &mut PluginContext<'_, '_>) -> Self {
+    pub async fn new(context: &mut PluginContext<'_, '_>, config: &GameConfiguration) -> Self {
         let scene = MenuScene::new(context).await;
 
         let screen_size = context.user_interface.screen_size();
+
+        let ic = &config.interface;
+
+        let menu_color = Color::from_rgba(255, 182, 66, 255);
 
         let ctx = &mut context.user_interface.build_ctx();
 
@@ -47,25 +53,36 @@ impl Menu {
             ButtonBuilder::new(
                 WidgetBuilder::new()
                     .on_row(row)
-                    .with_horizontal_alignment(HorizontalAlignment::Right)
+                    .with_margin(Thickness::uniform(5.))
+                    .with_width(340.)
                     .with_vertical_alignment(VerticalAlignment::Stretch),
             )
             .with_back(
                 DecoratorBuilder::new(
                     BorderBuilder::new(
                         WidgetBuilder::new()
-                            .with_foreground(Brush::Solid(Color::RED))
+                            // Border color
+                            .with_foreground(Brush::Solid(menu_color))
                             .with_child(
-                                TextBuilder::new(WidgetBuilder::new())
-                                    .with_text(text)
-                                    .with_horizontal_text_alignment(HorizontalAlignment::Left)
-                                    .with_vertical_text_alignment(VerticalAlignment::Center)
-                                    .build(ctx),
+                                TextBuilder::new(
+                                    WidgetBuilder::new()
+                                        .with_margin(Thickness {
+                                            top: 4.,
+                                            bottom: 4.,
+                                            left: 12.,
+                                            right: 12.,
+                                        })
+                                        .with_foreground(Brush::Solid(menu_color)),
+                                )
+                                .with_text(text)
+                                .with_horizontal_text_alignment(HorizontalAlignment::Right)
+                                .with_vertical_text_alignment(VerticalAlignment::Center)
+                                .build(ctx),
                             ),
                     )
                     .with_stroke_thickness(Thickness::uniform(1.0)),
                 )
-                .with_normal_brush(Brush::Solid(Color::TRANSPARENT))
+                .with_normal_brush(Brush::Solid(Color::from_rgba(255, 182, 66, 40)))
                 .with_hover_brush(Brush::Solid(Color::TRANSPARENT))
                 .with_pressed_brush(Brush::Solid(Color::TRANSPARENT))
                 .build(ctx),

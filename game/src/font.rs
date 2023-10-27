@@ -1,25 +1,29 @@
 use binrw::BinRead;
 use fyrox::{
-    asset::state::ResourceState,
-    core::{algebra::Vector2, parking_lot::Mutex},
+    asset::{io::ResourceIo, loader::ResourceLoader, state::ResourceState},
+    core::{
+        algebra::Vector2,
+        futures::executor::block_on,
+        log::Log,
+        parking_lot::Mutex,
+        uuid::{uuid, Uuid},
+    },
     fxhash::FxHashMap,
     gui::{
         draw::SharedTexture,
-        image::ImageBuilder,
         ttf::{Font, FontGlyph},
-        widget::WidgetBuilder,
         UserInterface,
     },
     resource::texture::{Texture, TextureKind, TexturePixelKind},
-    utils::into_gui_texture,
 };
-use std::{io::Cursor, sync::Arc};
+use std::{io::Cursor, path::Path, sync::Arc};
 
-pub fn set_default_font(ui: &mut UserInterface) {
-    let fnt_bytes = std::fs::read("DataUnpacked/textures/fonts/glow_monofonto_medium.fnt").unwrap();
+pub async fn load_font(path: &Path, io: &dyn ResourceIo) -> Font {
+    let font = {
+        let mut fnt_reader = io.file_reader(path).await.unwrap();
+        RawBitmapFont::read(&mut fnt_reader).unwrap()
+    };
 
-    let mut r = Cursor::new(fnt_bytes);
-    let font = RawBitmapFont::read(&mut r).unwrap();
     let font_name = {
         let mut name_bytes = font.name;
 
@@ -31,13 +35,10 @@ pub fn set_default_font(ui: &mut UserInterface) {
         String::from_utf8(name_bytes).expect("Font name invalid")
     };
 
-    let texture_path = format!(
-        "DataUnpacked/textures/fonts/{}.tex",
-        font_name.to_lowercase()
-    );
-
     let (tex_width, tex_height, tex_bytes) = {
-        let tex_bytes = std::fs::read(texture_path).unwrap();
+        let texture_path = format!("textures/fonts/{}.tex", font_name.to_lowercase());
+        let texture_path = Path::new(&texture_path);
+        let tex_bytes = io.load_file(texture_path).await.unwrap();
 
         // Load the texture size
         let (width, height) = {
@@ -88,16 +89,15 @@ pub fn set_default_font(ui: &mut UserInterface) {
     for i in 0..256 {
         let glyph = &font.data[i];
 
-        let mut ascent = glyph.ascent - glyph.height;
+        let ascent = glyph.ascent - glyph.height;
 
         if ascent > ascender {
             ascender = font.font_size - ascent;
         }
+
         if ascent < descender {
             descender = ascent;
         }
-
-        println!("{} {}", i as u8 as char, glyph.kerning);
 
         glyphs.push(FontGlyph {
             left: 0.,
@@ -117,7 +117,7 @@ pub fn set_default_font(ui: &mut UserInterface) {
         char_map.insert(i as u32, i);
     }
 
-    let mut nf = Font {
+    Font {
         height: font.font_size,
         glyphs,
         ascender,
@@ -126,11 +126,10 @@ pub fn set_default_font(ui: &mut UserInterface) {
         atlas: Vec::new(),
         atlas_size: 0,
         texture: Some(texture),
-    };
-
-    // Set as default font.
-    ui.default_font.set(nf);
+    }
 }
+
+pub fn set_default_font(ui: &mut UserInterface) {}
 
 #[derive(Debug, BinRead)]
 #[brw(little)]

@@ -1,9 +1,9 @@
 //! Game project.
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use bsa::BsaResourceIo;
 use config::GameConfiguration;
-use font::set_default_font;
+use font::{load_font, set_default_font};
 use fyrox::{
     core::log::Log,
     core::{
@@ -64,9 +64,21 @@ impl Game {
             state.set_resource_io(Arc::new(io));
         }
 
-        set_default_font(context.user_interface);
+        // Create and set default font
+        {
+            let font_path = Path::new("textures/fonts/glow_monofonto_medium.fnt");
+            let font = block_on(load_font(
+                font_path,
+                context.resource_manager.resource_io().as_ref(),
+            ));
 
-        let menu = block_on(Menu::new(&mut context));
+            // Set as default font.
+            context.user_interface.default_font.set(font);
+
+            set_default_font(context.user_interface);
+        }
+
+        let menu = block_on(Menu::new(&mut context, &config));
 
         Self { config, menu }
     }

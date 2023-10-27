@@ -8,6 +8,7 @@ pub struct GameConfiguration {
     pub loading: Loading,
     pub fonts: Fonts,
     pub archive: Archive,
+    pub interface: Interface,
 }
 
 #[allow(non_snake_case)]
@@ -41,6 +42,26 @@ pub struct Fonts {
     pub sFontFile_7: String,
     pub sFontFile_8: String,
     pub sFontFile_9: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize)]
+pub struct Interface {
+    pub iSystemColorTerminalRed: u8,
+    pub iSystemColorTerminalGreen: u8,
+    pub iSystemColorTerminalBlue: u8,
+
+    pub iSystemColorMainMenuRed: u8,
+    pub iSystemColorMainMenuGreen: u8,
+    pub iSystemColorMainMenuBlue: u8,
+
+    pub iSystemColorSystemRed: u8,
+    pub iSystemColorSystemGreen: u8,
+    pub iSystemColorSystemBlue: u8,
+
+    pub iSystemColorHUDAltRed: u8,
+    pub iSystemColorHUDAltGreen: u8,
+    pub iSystemColorHUDAltBlue: u8,
 }
 
 #[allow(non_snake_case)]
