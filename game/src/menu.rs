@@ -8,8 +8,10 @@ use fyrox::{
         grid::{Column, GridBuilder, Row},
         image::ImageBuilder,
         message::MessageDirection,
+        stack_panel::StackPanelBuilder,
+        text::TextBuilder,
         widget::{WidgetBuilder, WidgetMessage},
-        HorizontalAlignment, UiNode, UserInterface, VerticalAlignment,
+        HorizontalAlignment, Thickness, UiNode, UserInterface, VerticalAlignment,
     },
     plugin::PluginContext,
     resource::texture::Texture,
@@ -41,69 +43,79 @@ impl Menu {
 
         let ctx = &mut context.user_interface.build_ctx();
 
-        let button_dec = DecoratorBuilder::new(BorderBuilder::new(WidgetBuilder::new()))
-            .with_normal_brush(Brush::Solid(Color::TRANSPARENT))
-            .build(ctx);
+        let mut menu_button = |text: &str, row: usize| -> Handle<UiNode> {
+            ButtonBuilder::new(
+                WidgetBuilder::new()
+                    .on_row(row)
+                    .with_horizontal_alignment(HorizontalAlignment::Right)
+                    .with_vertical_alignment(VerticalAlignment::Stretch),
+            )
+            .with_back(
+                DecoratorBuilder::new(
+                    BorderBuilder::new(
+                        WidgetBuilder::new()
+                            .with_foreground(Brush::Solid(Color::RED))
+                            .with_child(
+                                TextBuilder::new(WidgetBuilder::new())
+                                    .with_text(text)
+                                    .with_horizontal_text_alignment(HorizontalAlignment::Left)
+                                    .with_vertical_text_alignment(VerticalAlignment::Center)
+                                    .build(ctx),
+                            ),
+                    )
+                    .with_stroke_thickness(Thickness::uniform(1.0)),
+                )
+                .with_normal_brush(Brush::Solid(Color::TRANSPARENT))
+                .with_hover_brush(Brush::Solid(Color::TRANSPARENT))
+                .with_pressed_brush(Brush::Solid(Color::TRANSPARENT))
+                .build(ctx),
+            )
+            .build(ctx)
+        };
+
+        let continue_button = menu_button("Continue", 0);
+        let new_button = menu_button("New", 1);
+        let load_button = menu_button("Load", 2);
+        let settings_button = menu_button("Settings", 3);
+        let credits_button = menu_button("Credits", 4);
+        let dlc_button = menu_button("Downloadable Content", 5);
+        let quit_button = menu_button("Quit", 6);
 
         let content = GridBuilder::new(
-            WidgetBuilder::new().with_children([
-                ImageBuilder::new(
-                    WidgetBuilder::new()
-                        .on_column(0)
-                        .with_width(512.)
-                        .with_height(128.),
-                )
-                .with_texture(into_gui_texture(
-                    context
-                        .resource_manager
-                        .request::<Texture, _>("textures/interface/main/main_title.dds"),
-                ))
-                .build(ctx),
-                GridBuilder::new(
-                    WidgetBuilder::new()
-                        .with_horizontal_alignment(HorizontalAlignment::Stretch)
-                        .on_column(1)
-                        .with_children([
-                            // Continue
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(0))
-                                .with_text("Continue")
-                                .build(ctx),
-                            // New
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(1))
-                                .with_text("New")
-                                .build(ctx),
-                            // Load
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(2))
-                                .with_text("Load")
-                                .build(ctx),
-                            // Settings
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(3))
-                                .with_text("Settings")
-                                .build(ctx),
-                            // Credits
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(4))
-                                .with_text("Credits")
-                                .build(ctx),
-                            // Downloadable Content
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(5))
-                                .with_text("Downloadable Content")
-                                .build(ctx),
-                            // Quit
-                            ButtonBuilder::new(WidgetBuilder::new().on_column(0).on_row(6))
-                                .with_text("Quit")
-                                .build(ctx),
-                        ]),
-                )
-                .add_column(Column::stretch())
-                .add_row(Row::auto())
-                .add_row(Row::auto())
-                .add_row(Row::auto())
-                .add_row(Row::auto())
-                .add_row(Row::auto())
-                .add_row(Row::auto())
-                .add_row(Row::auto())
-                .build(ctx),
-            ]),
+            WidgetBuilder::new()
+                .with_margin(Thickness::uniform(15.))
+                .with_children([
+                    // Title image
+                    ImageBuilder::new(
+                        WidgetBuilder::new()
+                            .with_horizontal_alignment(HorizontalAlignment::Left)
+                            .with_width(512.)
+                            .with_height(128.),
+                    )
+                    .with_texture(into_gui_texture(
+                        context
+                            .resource_manager
+                            .request::<Texture, _>("textures/interface/main/main_title.dds"),
+                    ))
+                    .build(ctx),
+                    // Menu Buttons
+                    StackPanelBuilder::new(
+                        WidgetBuilder::new()
+                            .with_vertical_alignment(VerticalAlignment::Center)
+                            .with_horizontal_alignment(HorizontalAlignment::Right)
+                            .on_column(1)
+                            .with_children([
+                                continue_button,
+                                new_button,
+                                load_button,
+                                settings_button,
+                                credits_button,
+                                dlc_button,
+                                quit_button,
+                            ]),
+                    )
+                    .build(ctx),
+                ]),
         )
         .add_row(Row::stretch())
         .add_column(Column::stretch())

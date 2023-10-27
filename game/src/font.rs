@@ -82,23 +82,28 @@ pub fn set_default_font(ui: &mut UserInterface) {
     let mut glyphs = Vec::new();
     let mut char_map = FxHashMap::default();
 
-    let mut ascender = 0.;
+    let mut ascender = font.font_size;
     let mut descender = 0.;
 
     for i in 0..256 {
         let glyph = &font.data[i];
-        if glyph.ascent > ascender {
-            ascender = glyph.ascent;
+
+        let mut ascent = glyph.ascent - glyph.height;
+
+        if ascent > ascender {
+            ascender = font.font_size - ascent;
         }
-        if glyph.ascent < descender {
-            descender = glyph.ascent;
+        if ascent < descender {
+            descender = ascent;
         }
 
+        println!("{} {}", i as u8 as char, glyph.kerning);
+
         glyphs.push(FontGlyph {
-            left: glyph.top_left.x,
-            top: glyph.top_left.y,
+            left: 0.,
+            top: glyph.ascent - glyph.height,
             pixels: Vec::new(),
-            advance: glyph.width,
+            advance: glyph.width + glyph.kerning,
             tex_coords: [
                 Vector2::new(glyph.top_left.x, glyph.top_left.y),
                 Vector2::new(glyph.top_right.x, glyph.top_right.y),
