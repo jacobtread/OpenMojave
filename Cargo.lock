@@ -1275,6 +1275,7 @@ dependencies = [
  "fyrox-core 0.26.0",
  "ron",
  "serde",
+ "walkdir",
 ]
 
 [[package]]

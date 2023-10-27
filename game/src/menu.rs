@@ -54,9 +54,9 @@ impl Menu {
                         .with_height(128.),
                 )
                 .with_texture(into_gui_texture(
-                    context.resource_manager.request::<Texture, _>(
-                        "DataUnpacked/textures/interface/main/main_title.dds",
-                    ),
+                    context
+                        .resource_manager
+                        .request::<Texture, _>("textures/interface/main/main_title.dds"),
                 ))
                 .build(ctx),
                 GridBuilder::new(
@@ -119,7 +119,7 @@ impl Menu {
         .with_texture(into_gui_texture(
             context
                 .resource_manager
-                .request::<Texture, _>("DataUnpacked/textures/interface/main/main_background.dds"),
+                .request::<Texture, _>("textures/interface/main/main_background.dds"),
         ))
         .build(ctx);
         // Create some widgets as usual.

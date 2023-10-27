@@ -1,4 +1,7 @@
 //! Game project.
+use std::sync::Arc;
+
+use bsa::BsaResourceIo;
 use config::GameConfiguration;
 use font::set_default_font;
 use fyrox::{
@@ -50,6 +53,16 @@ pub struct Game {
 impl Game {
     pub fn new(override_scene: Option<&str>, mut context: PluginContext) -> Self {
         let config = config::load_config();
+
+        // Update resource loading to use the bsa resource loader
+        {
+            // Collect the archives that must be loaded
+            let archives: Vec<&str> = config.archive.SArchiveList.split(", ").collect();
+            let io = BsaResourceIo::load(&archives, context.resource_manager.resource_io());
+
+            let mut state = context.resource_manager.state();
+            state.set_resource_io(Arc::new(io));
+        }
 
         set_default_font(context.user_interface);
 
