@@ -1,4 +1,5 @@
-# OpenMojave
+
+![Logo](./images/logo.svg)
 
 > VERY EARLY STAGES
 
