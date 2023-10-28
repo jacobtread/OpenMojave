@@ -10,7 +10,7 @@ use fyrox::{
         message::MessageDirection,
         stack_panel::StackPanelBuilder,
         text::TextBuilder,
-        widget::{WidgetBuilder, WidgetMessage},
+        widget::{WidgetBuilder, WidgetMessage, WidgetPalette, WidgetPaletteBuilder},
         HorizontalAlignment, Thickness, UiNode, UserInterface, VerticalAlignment,
     },
     plugin::PluginContext,
@@ -53,7 +53,7 @@ impl Menu {
             ButtonBuilder::new(
                 WidgetBuilder::new()
                     .on_row(row)
-                    .with_margin(Thickness::uniform(5.))
+                    .with_margin(Thickness::uniform(2.))
                     .with_width(340.)
                     .with_vertical_alignment(VerticalAlignment::Stretch),
             )
@@ -61,8 +61,19 @@ impl Menu {
                 DecoratorBuilder::new(
                     BorderBuilder::new(
                         WidgetBuilder::new()
-                            // Border color
-                            .with_foreground(Brush::Solid(menu_color))
+                            .with_palette(
+                                WidgetPaletteBuilder::new()
+                                    // Button background
+                                    .with_background_normal(Brush::Solid(Color::TRANSPARENT))
+                                    .with_background_hover(Brush::Solid(Color::from_rgba(
+                                        255, 182, 66, 40,
+                                    )))
+                                    // Border color
+                                    .with_foreground_normal(Brush::Solid(Color::TRANSPARENT))
+                                    .with_foreground_hover(Brush::Solid(Color::from_rgba(
+                                        255, 182, 66, 255,
+                                    ))),
+                            )
                             .with_child(
                                 TextBuilder::new(
                                     WidgetBuilder::new()
@@ -80,10 +91,8 @@ impl Menu {
                                 .build(ctx),
                             ),
                     )
-                    .with_stroke_thickness(Thickness::uniform(1.0)),
+                    .with_stroke_thickness(Thickness::uniform(2.0)),
                 )
-                .with_normal_brush(Brush::Solid(Color::from_rgba(255, 182, 66, 40)))
-                .with_hover_brush(Brush::Solid(Color::TRANSPARENT))
                 .with_pressed_brush(Brush::Solid(Color::TRANSPARENT))
                 .build(ctx),
             )
