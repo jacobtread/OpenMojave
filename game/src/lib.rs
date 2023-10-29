@@ -1,31 +1,19 @@
 //! Game project.
-use std::{path::Path, sync::Arc};
-
 use bsa::BsaResourceIo;
 use config::GameConfiguration;
 use font::{load_font, set_default_font};
 use fyrox::{
-    core::log::Log,
-    core::{
-        algebra::Vector2, futures::executor::block_on, pool::Handle, sstorage::ImmutableString,
-    },
-    engine::GraphicsContext,
+    core::futures::executor::block_on,
     event::{Event, WindowEvent},
-    event_loop::ControlFlow,
-    gui::{
-        button::ButtonBuilder, message::UiMessage, ttf::Font, utils, widget::WidgetBuilder,
-        UserInterface,
-    },
-    material::{Material, PropertyValue},
+    gui::{message::UiMessage, UserInterface},
     plugin::{Plugin, PluginConstructor, PluginContext, PluginRegistrationContext},
-    resource::texture::{TextureResource, TextureResourceExtension},
-    scene::Scene,
-    utils::translate_event,
 };
 use menu::Menu;
+use std::{fs::File, io::Cursor, path::Path, sync::Arc};
 
 mod bsa;
 mod config;
+mod esm;
 mod font;
 mod menu;
 
@@ -38,10 +26,10 @@ impl PluginConstructor for GameConstructor {
 
     fn create_instance(
         &self,
-        override_scene: Option<&str>,
+        _override_scene: Option<&str>,
         context: PluginContext,
     ) -> Box<dyn Plugin> {
-        Box::new(Game::new(override_scene, context))
+        Box::new(Game::new(context))
     }
 }
 
@@ -51,7 +39,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(override_scene: Option<&str>, mut context: PluginContext) -> Self {
+    pub fn new(mut context: PluginContext) -> Self {
         let config = config::load_config();
 
         // Update resource loading to use the bsa resource loader
@@ -77,6 +65,16 @@ impl Game {
 
             set_default_font(context.user_interface);
         }
+
+        let bytes = std::fs::read("Data/FalloutNV.esm").unwrap();
+
+        let mut reader = Cursor::new(bytes);
+
+        use binrw::BinRead;
+
+        let plugin = espers::plugin::Plugin::parse(&mut reader).unwrap();
+
+        let mut out = File::create("Data/FalloutNV.dump.esm").unwrap();
 
         let menu = block_on(Menu::new(&mut context, &config));
 
