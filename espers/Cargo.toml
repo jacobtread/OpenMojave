@@ -1,0 +1,21 @@
+[package]
+name = "espers"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0"
+description = "Library for reading ESP and ESM files"
+documentation = "https://github.com/mf-fm-mf-fm/espers"
+homepage = "https://github.com/mf-fm-mf-fm/espers"
+repository = "https://github.com/mf-fm-mf-fm/espers"
+
+[dependencies]
+binrw = "0.11"
+bitflags = "1.3"
+clap = { version = "4.1", features = ["derive"] }
+encoding_rs = "0.8"
+flate2 = "1.0"
+glob = "0.3"
+rgb = { version = "0.8", features = ["serde"] }
+serde = "1.0"
+serde_derive = "1.0"
+thiserror = "1.0"

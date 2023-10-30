@@ -13,7 +13,6 @@ use std::{fs::File, io::Cursor, path::Path, sync::Arc};
 
 mod bsa;
 mod config;
-mod esm;
 mod font;
 mod menu;
 
