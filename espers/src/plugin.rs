@@ -32,12 +32,19 @@ fn helper(rec: &Record, path: Vec<usize>) -> Vec<(u32, RecordKey)> {
     }
 }
 
+#[test]
+fn test() {
+    let mut file = std::fs::File::open("../Data/FalloutNV.esm").unwrap();
+    let plugin = Plugin::parse(&mut file);
+}
+
 impl Plugin {
     pub fn parse<T: Read + Seek>(reader: &mut T) -> Result<Self, Error> {
         let header: Header = TES4::read(reader)?.try_into()?;
         let args = (header.header.flags.contains(Flags::LOCALIZED),);
         let recs: Vec<RawRecord> = until_eof(reader, Endian::Little, args)?;
 
+        panic!("TOTAL RECS: {}", recs.len());
         let records: Vec<Record> = recs
             .into_iter()
             .map(Record::try_from)

@@ -15,5 +15,4 @@ nom = "7"
 serde = { version = "1", features = ["derive"] }
 serde_ini = "0.2"
 parking_lot = "0.12.1"
-
-espers = { version = "0.1", path = "../espers" }
+thiserror = "1"

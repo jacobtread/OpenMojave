@@ -2014,12 +2014,12 @@ dependencies = [
  "binrw",
  "bitflags 2.4.1",
  "bsa",
- "espers",
  "fyrox",
  "nom",
  "parking_lot",
  "serde",
  "serde_ini",
+ "thiserror",
 ]
 
 [[package]]

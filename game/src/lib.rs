@@ -13,6 +13,7 @@ use std::{fs::File, io::Cursor, path::Path, sync::Arc};
 
 mod bsa;
 mod config;
+mod esp;
 mod font;
 mod menu;
 
@@ -71,7 +72,7 @@ impl Game {
 
         use binrw::BinRead;
 
-        let plugin = espers::plugin::Plugin::parse(&mut reader).unwrap();
+        // let plugin = espers::plugin::Plugin::parse(&mut reader).unwrap();
 
         let mut out = File::create("Data/FalloutNV.dump.esm").unwrap();
 
