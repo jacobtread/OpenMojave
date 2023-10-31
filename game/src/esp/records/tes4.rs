@@ -2,8 +2,6 @@ use nom::{
     bytes::complete::*, combinator::*, multi::many0, number::complete::*, sequence::tuple, IResult,
 };
 
-use super::{record_type, ParseResult, RawRecord, RawSubRecord};
-
 #[derive(Debug)]
 pub struct Header {
     hedr: HEDR,
