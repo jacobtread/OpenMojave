@@ -1991,6 +1991,7 @@ dependencies = [
  "bsa",
  "fyrox",
  "nom",
+ "num_enum 0.7.0",
  "parking_lot",
  "serde",
  "serde_ini",

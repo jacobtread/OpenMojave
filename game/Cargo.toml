@@ -16,3 +16,4 @@ serde = { version = "1", features = ["derive"] }
 serde_ini = "0.2"
 parking_lot = "0.12.1"
 thiserror = "1"
+num_enum = "0.7"

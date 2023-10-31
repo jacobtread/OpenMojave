@@ -1,11 +1,12 @@
 use bitflags::bitflags;
 use nom::{
     bytes::complete::take,
-    combinator::{all_consuming, map, map_parser},
+    combinator::{all_consuming, map, map_parser, map_res},
     multi::many0,
     number::complete::{le_u16, le_u32},
     IResult,
 };
+use num_enum::TryFromPrimitive;
 use std::fmt::{Debug, Display};
 
 bitflags! {
@@ -55,6 +56,7 @@ impl RecordType {
 }
 
 /// Record type within a file
+#[derive(Debug)]
 pub struct RawRecord<'a> {
     pub ty: RecordType,
     pub flags: RecordFlags,
@@ -88,9 +90,32 @@ impl RawRecord<'_> {
     }
 }
 
+#[derive(Debug, Eq, PartialEq, TryFromPrimitive)]
+#[repr(u32)]
+pub enum GroupType {
+    TopLevel = 0,
+    WorldChildren = 1,
+    InteriorCellBlock = 2,
+    InterioCellSubBlock = 3,
+    ExteriorCellBlock = 4,
+    ExteriorCellSubBlock = 5,
+    CellChildren = 6,
+    TopicChildren = 7,
+    CellPersistentChildren = 8,
+    CellTemporaryChildren = 9,
+    CellVisibleDistantChildren = 10,
+}
+
+impl GroupType {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], GroupType> {
+        map_res(le_u32, GroupType::try_from_primitive)(input)
+    }
+}
+
+#[derive(Debug)]
 pub struct RawGroup<'a> {
     pub label: u32,
-    pub ty: RecordType,
+    pub ty: GroupType,
     pub stamp: u16,
     pub data: &'a [u8],
 }
@@ -102,7 +127,7 @@ impl RawGroup<'_> {
     pub fn parse(input: &[u8]) -> IResult<&[u8], RawGroup<'_>> {
         let (input, size) = le_u32(input)?;
         let (input, label) = le_u32(input)?;
-        let (input, ty) = RecordType::parse(input)?;
+        let (input, ty) = GroupType::parse(input)?;
         let (input, stamp) = le_u16(input)?;
         let (input, _unknown) = take(6usize)(input)?;
         let (input, data) = take(size - Self::HEADER_LENGTH)(input)?;
@@ -165,4 +190,15 @@ fn test_parse() {
     let (_, records): (&[u8], Vec<PluginEntry>) = PluginEntry::parse_all(&bytes).unwrap();
 
     println!("Parsed: {}", records.len());
+
+    for record in records {
+        match record {
+            PluginEntry::Record(record) => {
+                println!("{}", record.ty)
+            }
+            PluginEntry::Group(group) => {
+                println!("{:?}", group.ty)
+            }
+        }
+    }
 }
