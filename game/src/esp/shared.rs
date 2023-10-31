@@ -1,5 +1,8 @@
 use super::error::EspError;
 use binrw::binrw;
+use nom::combinator::map;
+use nom::number::complete::le_u32;
+use nom::IResult;
 use std::fmt;
 use std::io::Read;
 
@@ -7,6 +10,12 @@ use std::io::Read;
 #[brw(little)]
 #[derive(Debug, Clone)]
 pub struct FormId(pub u32);
+
+impl FormId {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], FormId> {
+        map(le_u32, FormId)(input)
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum LocalizedString {

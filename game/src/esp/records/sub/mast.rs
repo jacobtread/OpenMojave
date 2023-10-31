@@ -6,10 +6,10 @@ use crate::esp::records::{
 };
 
 #[derive(Debug)]
-pub struct CNAM(pub String);
+pub struct MAST(pub String);
 
-impl SubRecord for CNAM {
-    const TYPE: RecordType = RecordType::from_value(b"CNAM");
+impl SubRecord for MAST {
+    const TYPE: RecordType = RecordType::from_value(b"MAST");
 
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(parse_cstring, Self)(input)

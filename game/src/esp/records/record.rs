@@ -1,13 +1,26 @@
 use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    combinator::{all_consuming, map, map_parser, map_res},
-    multi::many0,
-    number::complete::{le_u16, le_u32},
-    IResult,
-};
+
 use num_enum::TryFromPrimitive;
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    iter::Peekable,
+};
+use thiserror::Error;
+
+/// Collection of re-exports for common nom usages
+pub mod nom_prelude {
+    pub use nom::{
+        bytes::complete::take,
+        combinator::{all_consuming, map, map_parser, map_res},
+        multi::many0,
+        number::complete::{le_u16, le_u32},
+        IResult,
+    };
+}
+
+use nom_prelude::*;
+
+use crate::esp::{records::tes4::TES4, shared::FormId};
 
 bitflags! {
     #[derive(Debug, Clone)]
@@ -66,7 +79,19 @@ pub struct RawRecord<'a> {
     pub data: &'a [u8],
 }
 
-impl RawRecord<'_> {
+impl<'b> RawRecord<'b> {
+    pub fn parse_record<'a, R: Record>(&'a self) -> Result<R, RecordParseError<'b>> {
+        let (_, records) = RawSubRecord::parse_all(self.data)?;
+        println!("Total Records: {}", records.len());
+
+        let mut parser = RecordParser {
+            record: self,
+            sub_iter: records.iter().peekable(),
+        };
+
+        R::parse(&mut parser)
+    }
+
     pub fn parse(input: &[u8], ty: RecordType) -> IResult<&[u8], RawRecord<'_>> {
         let (input, size) = le_u32(input)?;
         let (input, flags) = RecordFlags::parse(input)?;
@@ -87,6 +112,31 @@ impl RawRecord<'_> {
                 data,
             },
         ))
+    }
+
+    /// Parses the inner esm entries of this group
+    pub fn parse_inner(&self) -> IResult<&[u8], Vec<RawSubRecord<'_>>> {
+        RawSubRecord::parse_all(self.data)
+    }
+}
+
+#[derive(Debug)]
+pub struct RawSubRecord<'a> {
+    pub ty: RecordType,
+    pub data: &'a [u8],
+}
+
+impl RawSubRecord<'_> {
+    pub fn parse_all(input: &[u8]) -> IResult<&[u8], Vec<RawSubRecord<'_>>> {
+        all_consuming(many0(Self::parse))(input)
+    }
+
+    pub fn parse(input: &[u8]) -> IResult<&[u8], RawSubRecord<'_>> {
+        let (input, ty) = RecordType::parse(input)?;
+        let (input, size) = le_u16(input)?;
+        let (input, data) = take(size)(input)?;
+
+        Ok((input, RawSubRecord { ty, data }))
     }
 }
 
@@ -120,6 +170,16 @@ pub struct RawGroup<'a> {
     pub data: &'a [u8],
 }
 
+pub enum Group<'a> {
+    TopLevel {
+        label: RecordType,
+        records: RawRecord<'a>,
+    },
+    WorldChildren {
+        world: FormId,
+    },
+}
+
 impl RawGroup<'_> {
     const HEADER_LENGTH: u32 = 24;
     const GROUP_RECORD: RecordType = RecordType::from_value(b"GRUP");
@@ -142,30 +202,35 @@ impl RawGroup<'_> {
             },
         ))
     }
+
+    /// Parses the inner esm entries of this group
+    pub fn parse_inner(&self) -> IResult<&[u8], Vec<EsmEntry>> {
+        EsmEntry::parse_all(self.data)
+    }
 }
 
 /// Raw record within the file
-pub enum PluginEntry<'a> {
+pub enum EsmEntry<'a> {
     Record(RawRecord<'a>),
     Group(RawGroup<'a>),
 }
 
-impl PluginEntry<'_> {
-    pub fn parse_all(input: &[u8]) -> IResult<&[u8], Vec<PluginEntry<'_>>> {
+impl EsmEntry<'_> {
+    pub fn parse_all(input: &[u8]) -> IResult<&[u8], Vec<EsmEntry<'_>>> {
         all_consuming(many0(Self::parse))(input)
     }
 
-    pub fn parse(input: &[u8]) -> IResult<&[u8], PluginEntry<'_>> {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], EsmEntry<'_>> {
         let (input, ty) = RecordType::parse(input)?;
 
         if ty == RawGroup::GROUP_RECORD {
             RawGroup::parse(input)
                 // Convert into plugin entry
-                .map(|(input, group)| (input, PluginEntry::Group(group)))
+                .map(|(input, group)| (input, EsmEntry::Group(group)))
         } else {
             RawRecord::parse(input, ty)
                 // Convert into plugin entry
-                .map(|(input, group)| (input, PluginEntry::Record(group)))
+                .map(|(input, group)| (input, EsmEntry::Record(group)))
         }
     }
 }
@@ -184,21 +249,136 @@ impl Debug for RecordType {
     }
 }
 
+/// Iterator over sub records to make parsing easier
+pub struct RecordParser<'a, 'b> {
+    pub record: &'a RawRecord<'b>,
+    /// Iterator over the raw records
+    pub sub_iter: Peekable<std::slice::Iter<'a, RawSubRecord<'b>>>,
+}
+
+impl<'a, 'b> RecordParser<'a, 'b> {
+    pub fn skip_type(&mut self, ty: RecordType) {
+        self.sub_iter.next_if(|record| record.ty == ty);
+    }
+
+    pub fn skip_while_type(&mut self, ty: RecordType) {
+        while self.sub_iter.next_if(|record| record.ty == ty).is_some() {}
+    }
+
+    pub fn parse<T: SubRecord>(&mut self) -> Result<T, RecordParseError<'b>> {
+        let record = self
+            .sub_iter
+            .next()
+            .ok_or(RecordParseError::NoMoreContent)?;
+
+        T::parse_record(record)
+    }
+
+    pub fn try_parse<T: SubRecord>(&mut self) -> Result<Option<T>, RecordParseError<'b>> {
+        let record = match self.sub_iter.peek() {
+            Some(value) => *value,
+            None => return Ok(None),
+        };
+
+        let result = T::try_parse_record(record)?;
+
+        if result.is_some() {
+            // Skip the item that was peeked
+            self.sub_iter.next().expect("Peeked item didn't exist");
+        }
+
+        Ok(result)
+    }
+}
+
+pub trait Record: Sized {
+    const TYPE: RecordType;
+
+    fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>>;
+}
+
+pub trait SubRecord: Sized {
+    const TYPE: RecordType;
+
+    fn try_parse_record<'b>(
+        record: &RawSubRecord<'b>,
+    ) -> Result<Option<Self>, RecordParseError<'b>> {
+        match Self::parse_record(record) {
+            Ok(value) => Ok(Some(value)),
+            // If the type didn't match then it wasn't the right record
+            Err(RecordParseError::UnexpectedType { .. }) => Ok(None),
+            Err(err) => Err(err),
+        }
+    }
+
+    fn parse_record<'b>(record: &RawSubRecord<'b>) -> Result<Self, RecordParseError<'b>> {
+        if record.ty != Self::TYPE {
+            return Err(RecordParseError::UnexpectedType {
+                expected: Self::TYPE,
+                actual: record.ty.clone(),
+            });
+        }
+
+        let (_, this) = all_consuming(Self::parse)(record.data)?;
+
+        Ok(this)
+    }
+
+    fn parse(input: &[u8]) -> IResult<&[u8], Self>;
+}
+
+#[derive(Debug, Error)]
+pub enum RecordParseError<'a> {
+    /// Error from nom while parsing
+    #[error(transparent)]
+    Nom(nom::Err<nom::error::Error<&'a [u8]>>),
+    /// Reached an unexpected record type
+    #[error("Unexpected record type {expected} {actual}")]
+    UnexpectedType {
+        /// The expected record type
+        expected: RecordType,
+        /// The actual record type
+        actual: RecordType,
+    },
+    /// Tried to read another sub-record but there wasn't one
+    #[error("No more sub records to read")]
+    NoMoreContent,
+}
+
+impl<'a> From<nom::Err<nom::error::Error<&'a [u8]>>> for RecordParseError<'a> {
+    fn from(value: nom::Err<nom::error::Error<&'a [u8]>>) -> Self {
+        Self::Nom(value)
+    }
+}
+
 #[test]
 fn test_parse() {
     let bytes = std::fs::read("../Data/FalloutNV.esm").unwrap();
-    let (_, records): (&[u8], Vec<PluginEntry>) = PluginEntry::parse_all(&bytes).unwrap();
 
-    println!("Parsed: {}", records.len());
+    let (input, header) = EsmEntry::parse(&bytes).unwrap();
 
-    for record in records {
-        match record {
-            PluginEntry::Record(record) => {
-                println!("{}", record.ty)
-            }
-            PluginEntry::Group(group) => {
-                println!("{:?}", group.ty)
-            }
-        }
+    let header = match header {
+        EsmEntry::Record(record) => record.parse_record::<TES4>(),
+        EsmEntry::Group(_) => panic!("Expected first entry to be a header"),
     }
+    .unwrap();
+
+    dbg!(&header);
+
+    // let (_, records): (&[u8], Vec<EsmEntry>) = EsmEntry::parse_all(&input).unwrap();
+
+    // println!("Parsed: {}", records.len());
+
+    // for record in records {
+    //     match record {
+    //         EsmEntry::Record(record) => {
+    //             println!("{}", record.ty)
+    //         }
+    //         EsmEntry::Group(group) => {
+    //             let (_, records) = group.parse_inner().unwrap();
+    //             println!("{:?}", group.ty);
+    //             println!("Parsed: {}", records.len());
+    //         }
+    //     }
+    // }
 }
