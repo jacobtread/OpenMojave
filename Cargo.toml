@@ -1,6 +1,6 @@
 
 [workspace]
-members = ["executor", "game", "espers"]
+members = ["executor", "game"]
 resolver = "2"
 
 [workspace.dependencies]
