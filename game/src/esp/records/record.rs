@@ -1,5 +1,6 @@
 use bitflags::bitflags;
 
+use nom::Parser;
 use num_enum::TryFromPrimitive;
 use std::{
     fmt::{Debug, Display},
@@ -265,22 +266,32 @@ impl<'a, 'b> RecordParser<'a, 'b> {
         while self.sub_iter.next_if(|record| record.ty == ty).is_some() {}
     }
 
-    pub fn parse<T: SubRecord>(&mut self) -> Result<T, RecordParseError<'b>> {
+    pub fn parse<P, O>(&mut self, ty: RecordType, parser: P) -> Result<O, RecordParseError<'b>>
+    where
+        P: Parser<&'b [u8], O, nom::error::Error<&'b [u8]>>,
+    {
         let record = self
             .sub_iter
             .next()
             .ok_or(RecordParseError::NoMoreContent)?;
 
-        T::parse_record(record)
+        Self::parse_record(ty, record, parser)
     }
 
-    pub fn try_parse<T: SubRecord>(&mut self) -> Result<Option<T>, RecordParseError<'b>> {
+    pub fn try_parse<P, O>(
+        &mut self,
+        ty: RecordType,
+        parser: P,
+    ) -> Result<Option<O>, RecordParseError<'b>>
+    where
+        P: Parser<&'b [u8], O, nom::error::Error<&'b [u8]>>,
+    {
         let record = match self.sub_iter.peek() {
             Some(value) => *value,
             None => return Ok(None),
         };
 
-        let result = T::try_parse_record(record)?;
+        let result = Self::try_parse_record(ty, record, parser)?;
 
         if result.is_some() {
             // Skip the item that was peeked
@@ -289,21 +300,16 @@ impl<'a, 'b> RecordParser<'a, 'b> {
 
         Ok(result)
     }
-}
 
-pub trait Record: Sized {
-    const TYPE: RecordType;
-
-    fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>>;
-}
-
-pub trait SubRecord: Sized {
-    const TYPE: RecordType;
-
-    fn try_parse_record<'b>(
-        record: &RawSubRecord<'b>,
-    ) -> Result<Option<Self>, RecordParseError<'b>> {
-        match Self::parse_record(record) {
+    fn try_parse_record<P, O>(
+        ty: RecordType,
+        record: &'a RawSubRecord<'b>,
+        parser: P,
+    ) -> Result<Option<O>, RecordParseError<'b>>
+    where
+        P: Parser<&'b [u8], O, nom::error::Error<&'b [u8]>>,
+    {
+        match Self::parse_record(ty, record, parser) {
             Ok(value) => Ok(Some(value)),
             // If the type didn't match then it wasn't the right record
             Err(RecordParseError::UnexpectedType { .. }) => Ok(None),
@@ -311,20 +317,31 @@ pub trait SubRecord: Sized {
         }
     }
 
-    fn parse_record<'b>(record: &RawSubRecord<'b>) -> Result<Self, RecordParseError<'b>> {
-        if record.ty != Self::TYPE {
+    fn parse_record<P, O>(
+        ty: RecordType,
+        record: &'a RawSubRecord<'b>,
+        parser: P,
+    ) -> Result<O, RecordParseError<'b>>
+    where
+        P: Parser<&'b [u8], O, nom::error::Error<&'b [u8]>>,
+    {
+        if record.ty != ty {
             return Err(RecordParseError::UnexpectedType {
-                expected: Self::TYPE,
+                expected: ty,
                 actual: record.ty.clone(),
             });
         }
 
-        let (_, this) = all_consuming(Self::parse)(record.data)?;
+        let (_, this) = all_consuming(parser)(record.data)?;
 
         Ok(this)
     }
+}
 
-    fn parse(input: &[u8]) -> IResult<&[u8], Self>;
+pub trait Record: Sized {
+    const TYPE: RecordType;
+
+    fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>>;
 }
 
 #[derive(Debug, Error)]

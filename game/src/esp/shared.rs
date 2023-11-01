@@ -6,6 +6,9 @@ use nom::IResult;
 use std::fmt;
 use std::io::Read;
 
+#[derive(Debug, Clone)]
+pub struct EditorId(pub String);
+
 #[binrw]
 #[brw(little)]
 #[derive(Debug, Clone)]
