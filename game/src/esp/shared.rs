@@ -1,4 +1,5 @@
 use super::error::EspError;
+use super::record::FromSubRecord;
 use binrw::binrw;
 use nom::combinator::map;
 use nom::number::complete::le_u32;
@@ -18,10 +19,22 @@ impl Deref for EditorId {
     }
 }
 
+impl FromSubRecord for EditorId {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(String::parse, Self)(input)
+    }
+}
+
 #[binrw]
 #[brw(little)]
 #[derive(Debug, Clone)]
 pub struct FormId(pub u32);
+
+impl FromSubRecord for FormId {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u32, FormId)(input)
+    }
+}
 
 impl FormId {
     pub fn parse(input: &[u8]) -> IResult<&[u8], FormId> {
