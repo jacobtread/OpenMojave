@@ -147,7 +147,7 @@ pub enum GroupType {
     TopLevel = 0,
     WorldChildren = 1,
     InteriorCellBlock = 2,
-    InterioCellSubBlock = 3,
+    InteriorCellSubBlock = 3,
     ExteriorCellBlock = 4,
     ExteriorCellSubBlock = 5,
     CellChildren = 6,
@@ -178,6 +178,45 @@ pub enum Group<'a> {
     },
     WorldChildren {
         world: FormId,
+        records: RawRecord<'a>,
+    },
+    InteriorCellBlock {
+        cell_block_number: i32,
+        records: RawRecord<'a>,
+    },
+    InteriorCellSubBlock {
+        cell_sub_block_number: i32,
+        records: RawRecord<'a>,
+    },
+    ExteriorCellBlock {
+        y: u8,
+        x: u8,
+        records: RawRecord<'a>,
+    },
+    ExteriorCellSubBlock {
+        y: u8,
+        x: u8,
+        records: RawRecord<'a>,
+    },
+    CellChildren {
+        cell: FormId,
+        records: RawRecord<'a>,
+    },
+    TopicChildren {
+        cell: FormId,
+        records: RawRecord<'a>,
+    },
+    CellPersistentChildren {
+        cell: FormId,
+        records: RawRecord<'a>,
+    },
+    CellTemporaryChildren {
+        cell: FormId,
+        records: RawRecord<'a>,
+    },
+    CellVisibleDistantChildren {
+        cell: FormId,
+        records: RawRecord<'a>,
     },
 }
 
@@ -360,6 +399,9 @@ pub enum RecordParseError<'a> {
     /// Tried to read another sub-record but there wasn't one
     #[error("No more sub records to read")]
     NoMoreContent,
+    /// Custom string error message
+    #[error("{0}")]
+    Custom(String),
 }
 
 impl<'a> From<nom::Err<nom::error::Error<&'a [u8]>>> for RecordParseError<'a> {
@@ -382,9 +424,19 @@ fn test_parse() {
 
     dbg!(&header);
 
-    // let (_, records): (&[u8], Vec<EsmEntry>) = EsmEntry::parse_all(&input).unwrap();
+    let (_, records): (&[u8], Vec<EsmEntry>) = EsmEntry::parse_all(&input).unwrap();
 
-    // println!("Parsed: {}", records.len());
+    println!("Parsed: {}", records.len());
+
+    // let gmst_group = records.iter()
+    // .find_map(|value| match value {
+    //     EsmEntry::Record(_) => None,
+    //     EsmEntry::Group(group) => {
+    //         if group.ty == GroupType::TopLevel {
+
+    //         }
+    //     }
+    // })
 
     // for record in records {
     //     match record {

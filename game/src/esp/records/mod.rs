@@ -9,6 +9,7 @@ use nom::{
 
 pub mod achr;
 pub mod collection;
+pub mod gmst;
 pub mod record;
 pub mod sub;
 pub mod tes4;

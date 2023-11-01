@@ -5,9 +5,18 @@ use nom::number::complete::le_u32;
 use nom::IResult;
 use std::fmt;
 use std::io::Read;
+use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct EditorId(pub String);
+
+impl Deref for EditorId {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[binrw]
 #[brw(little)]
