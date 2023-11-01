@@ -1,17 +1,24 @@
+use std::{
+    any::TypeId,
+    ops::{Deref, DerefMut},
+};
+
 use fyrox::{
-    core::{color::Color, pool::Handle},
+    core::{color::Color, pool::Handle, reflect::*, visitor::*},
     gui::{
         border::BorderBuilder,
         brush::Brush,
         button::ButtonBuilder,
         decorator::{Decorator, DecoratorBuilder},
+        define_widget_deref,
         grid::{Column, GridBuilder, Row},
         image::ImageBuilder,
         message::MessageDirection,
         stack_panel::StackPanelBuilder,
         text::TextBuilder,
-        widget::{WidgetBuilder, WidgetMessage, WidgetPalette, WidgetPaletteBuilder},
-        HorizontalAlignment, Thickness, UiNode, UserInterface, VerticalAlignment,
+        widget::{Widget, WidgetBuilder, WidgetMessage},
+        BuildContext, Control, HorizontalAlignment, Thickness, UiNode, UserInterface,
+        VerticalAlignment,
     },
     plugin::PluginContext,
     resource::texture::Texture,
@@ -37,75 +44,174 @@ struct MenuScene {
     music: Handle<Node>,
 }
 
+#[derive(Debug, Clone, Reflect, Visit)]
+pub struct MenuButton {
+    widget: Widget,
+    border: Handle<UiNode>,
+    text: Handle<UiNode>,
+}
+
+impl Deref for MenuButton {
+    type Target = Widget;
+
+    fn deref(&self) -> &Self::Target {
+        &self.widget
+    }
+}
+
+impl DerefMut for MenuButton {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.widget
+    }
+}
+
+pub const MENU_COLOR: Color = Color::from_rgba(255, 182, 66, 255);
+
+impl MenuButton {
+    pub const BACKGROUND_DEFAULT: Color = Color::TRANSPARENT;
+    pub const BACKGROUND_HOVER: Color = Color::from_rgba(255, 182, 66, 40);
+
+    pub const BORDER_DEFAULT: Color = Color::TRANSPARENT;
+    pub const BORDER_HOVER: Color = Color::from_rgba(255, 182, 66, 255);
+}
+
+impl Control for MenuButton {
+    fn query_component(&self, type_id: std::any::TypeId) -> Option<&dyn std::any::Any> {
+        if type_id == TypeId::of::<Self>() {
+            Some(self)
+        } else {
+            None
+        }
+    }
+
+    fn handle_routed_message(
+        &mut self,
+        ui: &mut UserInterface,
+        message: &mut fyrox::gui::message::UiMessage,
+    ) {
+        self.widget.handle_routed_message(ui, message);
+
+        // Only handle widget messages
+        let msg = match message.data::<WidgetMessage>() {
+            Some(value) => value,
+            None => return,
+        };
+
+        // Ignore messages that aren't for us
+        if message.destination() != self.handle() && !self.has_descendant(message.destination(), ui)
+        {
+            return;
+        }
+
+        match msg {
+            WidgetMessage::MouseEnter => {
+                ui.send_message(WidgetMessage::foreground(
+                    self.border,
+                    MessageDirection::ToWidget,
+                    Brush::Solid(Self::BORDER_HOVER),
+                ));
+
+                ui.send_message(WidgetMessage::background(
+                    self.border,
+                    MessageDirection::ToWidget,
+                    Brush::Solid(Self::BACKGROUND_HOVER),
+                ));
+            }
+
+            WidgetMessage::MouseLeave => {
+                ui.send_message(WidgetMessage::foreground(
+                    self.border,
+                    MessageDirection::ToWidget,
+                    Brush::Solid(Self::BORDER_DEFAULT),
+                ));
+
+                ui.send_message(WidgetMessage::background(
+                    self.border,
+                    MessageDirection::ToWidget,
+                    Brush::Solid(Self::BACKGROUND_DEFAULT),
+                ));
+            }
+
+            _ => {}
+        }
+    }
+}
+
+pub struct MenuButtonBuilder {
+    text: Option<String>,
+}
+
+impl MenuButtonBuilder {
+    pub fn new() -> Self {
+        Self { text: None }
+    }
+
+    pub fn with_text(mut self, text: &str) -> Self {
+        self.text = Some(text.to_string());
+        self
+    }
+
+    pub fn build(self, ctx: &mut BuildContext<'_>) -> Handle<UiNode> {
+        let text = self.text.unwrap_or_default();
+        let text = TextBuilder::new(
+            WidgetBuilder::new()
+                .with_margin(Thickness {
+                    top: 4.,
+                    bottom: 4.,
+                    left: 12.,
+                    right: 12.,
+                })
+                .with_foreground(Brush::Solid(MENU_COLOR)),
+        )
+        .with_text(text)
+        .with_horizontal_text_alignment(HorizontalAlignment::Right)
+        .with_vertical_text_alignment(VerticalAlignment::Center)
+        .build(ctx);
+
+        let border = BorderBuilder::new(
+            WidgetBuilder::new()
+                .with_child(text)
+                .with_foreground(Brush::Solid(Color::TRANSPARENT))
+                .with_background(Brush::Solid(MenuButton::BACKGROUND_DEFAULT)),
+        )
+        .with_stroke_thickness(Thickness::uniform(2.0))
+        .build(ctx);
+
+        let widget = WidgetBuilder::new()
+            .with_margin(Thickness::uniform(2.))
+            .with_width(340.)
+            .with_vertical_alignment(VerticalAlignment::Stretch)
+            .with_background(Brush::Solid(MenuButton::BACKGROUND_DEFAULT))
+            .with_child(border)
+            .build();
+
+        let menu_button = MenuButton {
+            border,
+            text,
+            widget,
+        };
+
+        ctx.add_node(UiNode::new(menu_button))
+    }
+}
+
 impl Menu {
     pub async fn new(context: &mut PluginContext<'_, '_>, config: &GameConfiguration) -> Self {
         let scene = MenuScene::new(context).await;
 
         let screen_size = context.user_interface.screen_size();
 
-        let ic = &config.interface;
-
-        let menu_color = Color::from_rgba(255, 182, 66, 255);
-
         let ctx = &mut context.user_interface.build_ctx();
 
-        let mut menu_button = |text: &str, row: usize| -> Handle<UiNode> {
-            ButtonBuilder::new(
-                WidgetBuilder::new()
-                    .on_row(row)
-                    .with_margin(Thickness::uniform(2.))
-                    .with_width(340.)
-                    .with_vertical_alignment(VerticalAlignment::Stretch),
-            )
-            .with_back(
-                DecoratorBuilder::new(
-                    BorderBuilder::new(
-                        WidgetBuilder::new()
-                            .with_palette(
-                                WidgetPaletteBuilder::new()
-                                    // Button background
-                                    .with_background_normal(Brush::Solid(Color::TRANSPARENT))
-                                    .with_background_hover(Brush::Solid(Color::from_rgba(
-                                        255, 182, 66, 40,
-                                    )))
-                                    // Border color
-                                    .with_foreground_normal(Brush::Solid(Color::TRANSPARENT))
-                                    .with_foreground_hover(Brush::Solid(Color::from_rgba(
-                                        255, 182, 66, 255,
-                                    ))),
-                            )
-                            .with_child(
-                                TextBuilder::new(
-                                    WidgetBuilder::new()
-                                        .with_margin(Thickness {
-                                            top: 4.,
-                                            bottom: 4.,
-                                            left: 12.,
-                                            right: 12.,
-                                        })
-                                        .with_foreground(Brush::Solid(menu_color)),
-                                )
-                                .with_text(text)
-                                .with_horizontal_text_alignment(HorizontalAlignment::Right)
-                                .with_vertical_text_alignment(VerticalAlignment::Center)
-                                .build(ctx),
-                            ),
-                    )
-                    .with_stroke_thickness(Thickness::uniform(2.0)),
-                )
-                .with_pressed_brush(Brush::Solid(Color::TRANSPARENT))
-                .build(ctx),
-            )
-            .build(ctx)
-        };
-
-        let continue_button = menu_button("Continue", 0);
-        let new_button = menu_button("New", 1);
-        let load_button = menu_button("Load", 2);
-        let settings_button = menu_button("Settings", 3);
-        let credits_button = menu_button("Credits", 4);
-        let dlc_button = menu_button("Downloadable Content", 5);
-        let quit_button = menu_button("Quit", 6);
+        let continue_btn = MenuButtonBuilder::new().with_text("Continue").build(ctx);
+        let new_btn = MenuButtonBuilder::new().with_text("New").build(ctx);
+        let load_btn = MenuButtonBuilder::new().with_text("Load").build(ctx);
+        let settings_btn = MenuButtonBuilder::new().with_text("Settings").build(ctx);
+        let credits_btn = MenuButtonBuilder::new().with_text("Credits").build(ctx);
+        let dlc_btn = MenuButtonBuilder::new()
+            .with_text("Downloadable Content")
+            .build(ctx);
+        let quit_btn = MenuButtonBuilder::new().with_text("Quit").build(ctx);
 
         let content = GridBuilder::new(
             WidgetBuilder::new()
@@ -131,13 +237,13 @@ impl Menu {
                             .with_horizontal_alignment(HorizontalAlignment::Right)
                             .on_column(1)
                             .with_children([
-                                continue_button,
-                                new_button,
-                                load_button,
-                                settings_button,
-                                credits_button,
-                                dlc_button,
-                                quit_button,
+                                continue_btn,
+                                new_btn,
+                                load_btn,
+                                settings_btn,
+                                credits_btn,
+                                dlc_btn,
+                                quit_btn,
                             ]),
                     )
                     .build(ctx),
