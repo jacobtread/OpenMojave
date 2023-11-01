@@ -5,10 +5,10 @@ use crate::esp::records::{
 use nom::combinator::map;
 
 #[derive(Debug)]
-pub struct SNAM(pub String);
+pub struct EDID(pub String);
 
-impl SubRecord for SNAM {
-    const TYPE: RecordType = RecordType::from_value(b"SNAM");
+impl SubRecord for EDID {
+    const TYPE: RecordType = RecordType::from_value(b"EDID");
 
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(parse_cstring, Self)(input)

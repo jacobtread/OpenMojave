@@ -4,11 +4,12 @@ use crate::esp::records::{
 };
 use nom::combinator::map;
 
+// Local variable name
 #[derive(Debug)]
-pub struct SNAM(pub String);
+pub struct SCVR(pub String);
 
-impl SubRecord for SNAM {
-    const TYPE: RecordType = RecordType::from_value(b"SNAM");
+impl SubRecord for SCVR {
+    const TYPE: RecordType = RecordType::from_value(b"SCVR");
 
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(parse_cstring, Self)(input)
