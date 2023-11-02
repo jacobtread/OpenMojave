@@ -7,8 +7,10 @@ use nom::multi::{length_data, length_value};
 use nom::number::complete::{be_u16, le_u16, le_u32, u8};
 use nom::sequence::tuple;
 use nom::IResult;
-use std::fmt;
+use std::any::type_name;
+use std::fmt::{self, Debug};
 use std::io::Read;
+use std::marker::PhantomData;
 use std::ops::Deref;
 
 #[derive(Debug, Clone)]
@@ -49,8 +51,27 @@ impl FromRecordBytes for RGBA {
     }
 }
 
-#[binrw]
-#[brw(little)]
+/// Represents a FormId of a specific type
+pub struct TypedFormId<T> {
+    pub id: u32,
+    pub _marker: PhantomData<T>,
+}
+
+impl<T> Debug for TypedFormId<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "TypedFormId<{}>({:#06x})", type_name::<T>(), self.id)
+    }
+}
+
+impl<T> FromRecordBytes for TypedFormId<T> {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u32, |id| Self {
+            id,
+            _marker: PhantomData,
+        })(input)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct FormId(pub u32);
 

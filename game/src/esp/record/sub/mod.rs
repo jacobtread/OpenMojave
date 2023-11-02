@@ -2,6 +2,7 @@ use super::RecordType;
 
 pub mod actor_values;
 pub mod model;
+pub mod object_bounds;
 pub mod xnam;
 
 pub const HEDR: RecordType = RecordType::from_value(b"HEDR");
@@ -67,3 +68,5 @@ pub const SNDD: RecordType = RecordType::from_value(b"SNDD");
 pub const SNDX: RecordType = RecordType::from_value(b"SNDX");
 pub const ANAM: RecordType = RecordType::from_value(b"ANAM");
 pub const GNAM: RecordType = RecordType::from_value(b"GNAM");
+pub const WNAM: RecordType = RecordType::from_value(b"WNAM");
+pub const RDAT: RecordType = RecordType::from_value(b"RDAT");

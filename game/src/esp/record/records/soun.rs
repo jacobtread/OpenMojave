@@ -8,19 +8,17 @@ use nom::{
 
 use crate::esp::{
     record::{
-        sub::{ANAM, EDID, FNAM, GNAM, HNAM, OBND, RNAM, SNDD, SNDX},
+        sub::{object_bounds::ObjectBounds, ANAM, EDID, FNAM, GNAM, HNAM, OBND, RNAM, SNDD, SNDX},
         FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::EditorId,
 };
 
-use super::txst::OBND;
-
 /// Sound
 #[derive(Debug)]
 pub struct SOUN {
     pub editor_id: EditorId,
-    pub object_bounds: OBND,
+    pub object_bounds: ObjectBounds,
     pub file_name: Option<String>,
     pub random_chance: Option<u8>,
     pub data: SoundData,
@@ -34,7 +32,7 @@ impl Record for SOUN {
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;
-        let object_bounds = parser.parse::<OBND>(OBND)?;
+        let object_bounds = parser.parse::<ObjectBounds>(OBND)?;
 
         let file_name = parser.try_parse::<String>(FNAM)?;
         let random_chance = parser.try_parse::<u8>(RNAM)?;

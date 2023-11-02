@@ -314,6 +314,21 @@ pub trait FromRecordBytes: Sized {
     fn parse(input: &[u8]) -> IResult<&[u8], Self>;
 }
 
+impl<T> FromRecordBytes for Option<T>
+where
+    T: FromRecordBytes,
+{
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        // Record was null
+        if input.is_empty() {
+            return Ok((input, None));
+        }
+
+        // Record wasn't null
+        map(T::parse, Some)(input)
+    }
+}
+
 /// FromRecordBytes implementor for getting all the bytes
 pub struct RawBytes(pub Vec<u8>);
 

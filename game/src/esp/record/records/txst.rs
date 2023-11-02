@@ -3,14 +3,16 @@ use nom::{
     bytes::complete::take,
     character::complete::u8,
     combinator::map,
-    number::complete::{le_f32, le_i16, le_u16},
+    number::complete::{le_f32, le_u16},
     sequence::tuple,
     IResult,
 };
 
 use crate::esp::{
     record::{
-        sub::{DNAM, DODT, EDID, OBND, TX00, TX01, TX02, TX03, TX04, TX05},
+        sub::{
+            object_bounds::ObjectBounds, DNAM, DODT, EDID, OBND, TX00, TX01, TX02, TX03, TX04, TX05,
+        },
         FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::{EditorId, RGBA},
@@ -19,7 +21,7 @@ use crate::esp::{
 #[derive(Debug)]
 pub struct TXST {
     pub editor_id: EditorId,
-    pub object_bounds: OBND,
+    pub object_bounds: ObjectBounds,
     pub tx00: Option<String>,
     pub tx01: Option<String>,
     pub tx02: Option<String>,
@@ -48,7 +50,7 @@ impl Record for TXST {
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;
-        let object_bounds = parser.parse::<OBND>(OBND)?;
+        let object_bounds = parser.parse::<ObjectBounds>(OBND)?;
         let tx00 = parser.try_parse::<String>(TX00)?;
         let tx01 = parser.try_parse::<String>(TX01)?;
         let tx02 = parser.try_parse::<String>(TX02)?;
@@ -70,33 +72,6 @@ impl Record for TXST {
             decal_data,
             flags,
         })
-    }
-}
-
-#[derive(Debug)]
-pub struct OBND {
-    pub x1: i16,
-    pub y1: i16,
-    pub z1: i16,
-
-    pub x2: i16,
-    pub y2: i16,
-    pub z2: i16,
-}
-
-impl FromRecordBytes for OBND {
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        map(
-            tuple((le_i16, le_i16, le_i16, le_i16, le_i16, le_i16)),
-            |(x1, y1, z1, x2, y2, z2)| Self {
-                x1,
-                y1,
-                z1,
-                x2,
-                y2,
-                z2,
-            },
-        )(input)
     }
 }
 
