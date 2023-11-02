@@ -124,9 +124,9 @@ bitflags! {
     }
 }
 
-impl FACTFlags1 {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(u8, FACTFlags1::from_bits_retain)(input)
+impl FromRecordBytes for FACTFlags1 {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(u8, Self::from_bits_retain)(input)
     }
 }
 
@@ -138,9 +138,9 @@ bitflags! {
     }
 }
 
-impl FACTFlags2 {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(u8, FACTFlags2::from_bits_retain)(input)
+impl FromRecordBytes for FACTFlags2 {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(u8, Self::from_bits_retain)(input)
     }
 }
 
