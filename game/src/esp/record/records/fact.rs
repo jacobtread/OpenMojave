@@ -1,21 +1,12 @@
-use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    combinator::map,
-    number::complete::{le_i32, u8},
-    sequence::tuple,
-    IResult,
-};
-use num_enum::TryFromPrimitive;
-
 use crate::esp::{
     record::{
-        enum_value,
-        sub::{CNAM, DATA, EDID, FNAM, FULL, INAM, MNAM, RNAM, WMI1, XNAM},
+        sub::{xnam::XNAM, CNAM, DATA, EDID, FNAM, FULL, INAM, MNAM, RNAM, WMI1, XNAM},
         FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::{EditorId, FormId},
 };
+use bitflags::bitflags;
+use nom::{bytes::complete::take, combinator::map, number::complete::u8, sequence::tuple, IResult};
 
 #[derive(Debug)]
 pub struct FACT {
@@ -35,10 +26,10 @@ impl Record for FACT {
         let name = parser.try_parse::<String>(FULL)?;
 
         let mut relations: Vec<XNAM> = Vec::new();
-
         while let Some(relation) = parser.try_parse::<XNAM>(XNAM)? {
             relations.push(relation);
         }
+
         let data = parser.try_parse::<FACTDATA>(DATA)?;
 
         // Unused
@@ -67,36 +58,6 @@ impl Record for FACT {
             ranks,
             reputation,
         })
-    }
-}
-
-#[derive(Debug)]
-pub struct XNAM {
-    /// FormID of the FACT or RACE record
-    pub faction: FormId,
-    pub modifier: i32,
-    pub group_combat_reaction: GroupCombatReaction,
-}
-
-#[derive(Debug, Clone, TryFromPrimitive)]
-#[repr(u32)]
-pub enum GroupCombatReaction {
-    Neutral = 0,
-    Enemy = 1,
-    Ally = 2,
-    Friend = 3,
-}
-
-impl FromRecordBytes for XNAM {
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        map(
-            tuple((FormId::parse, le_i32, enum_value::<GroupCombatReaction>)),
-            |(faction, modifier, group_combat_reaction)| Self {
-                faction,
-                modifier,
-                group_combat_reaction,
-            },
-        )(input)
     }
 }
 

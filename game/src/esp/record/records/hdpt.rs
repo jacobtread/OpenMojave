@@ -13,7 +13,7 @@ use crate::esp::{
 pub struct HDPT {
     pub editor_id: EditorId,
     pub name: String,
-    pub model_data: ModelData,
+    pub model_data: Option<ModelData>,
     pub flags: Flags,
     pub extra_parts: Vec<FormId>,
 }

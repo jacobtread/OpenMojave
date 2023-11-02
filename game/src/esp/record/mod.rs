@@ -58,7 +58,7 @@ impl RecordFlags {
 }
 
 /// Record type identifier
-#[derive(Hash, Clone, PartialEq, Eq)]
+#[derive(Hash, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct RecordType([u8; 4]);
 
@@ -104,7 +104,7 @@ impl<'b> RawRecord<'b> {
 
         let mut parser = RecordParser {
             record: self,
-            sub_iter: records.iter().peekable(),
+            record_iter: records.iter().peekable(),
         };
 
         R::parse(&mut parser)
@@ -314,6 +314,21 @@ pub trait FromRecordBytes: Sized {
     fn parse(input: &[u8]) -> IResult<&[u8], Self>;
 }
 
+/// FromRecordBytes implementor for getting all the bytes
+pub struct RawBytes(pub Vec<u8>);
+
+impl RawBytes {
+    pub fn into_inner(self) -> Vec<u8> {
+        self.0
+    }
+}
+
+impl FromRecordBytes for RawBytes {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(rest, |bytes: &[u8]| Self(bytes.to_vec()))(input)
+    }
+}
+
 /// Collection of many repeated values from a sub-record
 pub struct Collection<T: FromRecordBytes>(pub Vec<T>);
 
@@ -335,75 +350,35 @@ where
     }
 }
 
+pub trait RecordCollection: Sized {
+    fn parse_next<'b>(
+        parser: &mut RecordParser<'_, 'b>,
+    ) -> Result<Option<Self>, RecordParseError<'b>>;
+}
+
 /// Iterator over sub records to make parsing easier
 pub struct RecordParser<'a, 'b> {
     pub record: &'a RawRecord<'b>,
     /// Iterator over the raw records
-    pub sub_iter: Peekable<std::slice::Iter<'a, RawSubRecord<'b>>>,
+    pub record_iter: Peekable<std::slice::Iter<'a, RawSubRecord<'b>>>,
 }
 
 impl<'a, 'b> RecordParser<'a, 'b> {
-    pub fn skip_type(&mut self, ty: RecordType) {
-        self.sub_iter.next_if(|record| record.ty == ty);
-    }
-
-    pub fn skip_while_type(&mut self, ty: RecordType) {
-        while self.sub_iter.next_if(|record| record.ty == ty).is_some() {}
-    }
-
-    pub fn parse<T>(&mut self, ty: RecordType) -> Result<T, RecordParseError<'b>>
-    where
-        T: FromRecordBytes,
-    {
-        let record = self
-            .sub_iter
+    /// Gets the next element requiring that one exist
+    fn require_next(&mut self) -> Result<&RawSubRecord<'b>, RecordParseError<'b>> {
+        self.record_iter
             .next()
-            .ok_or(RecordParseError::NoMoreContent)?;
-
-        Self::parse_record(ty, record)
+            .ok_or(RecordParseError::NoMoreContent)
     }
 
-    pub fn try_parse<T>(&mut self, ty: RecordType) -> Result<Option<T>, RecordParseError<'b>>
-    where
-        T: FromRecordBytes,
-    {
-        let record = match self.sub_iter.peek() {
-            Some(value) => *value,
-            None => return Ok(None),
-        };
-
-        let result = Self::try_parse_record(ty, record)?;
-
-        if result.is_some() {
-            // Skip the item that was peeked
-            self.sub_iter.next().expect("Peeked item didn't exist");
-        }
-
-        Ok(result)
-    }
-
-    fn try_parse_record<T>(
+    /// Gets the next element requiring that one exist and
+    /// is of the provided type
+    fn require_next_typed(
+        &mut self,
         ty: RecordType,
-        record: &'a RawSubRecord<'b>,
-    ) -> Result<Option<T>, RecordParseError<'b>>
-    where
-        T: FromRecordBytes,
-    {
-        match Self::parse_record(ty, record) {
-            Ok(value) => Ok(Some(value)),
-            // If the type didn't match then it wasn't the right record
-            Err(RecordParseError::UnexpectedType { .. }) => Ok(None),
-            Err(err) => Err(err),
-        }
-    }
+    ) -> Result<&RawSubRecord<'b>, RecordParseError<'b>> {
+        let record = self.require_next()?;
 
-    fn parse_record<T>(
-        ty: RecordType,
-        record: &'a RawSubRecord<'b>,
-    ) -> Result<T, RecordParseError<'b>>
-    where
-        T: FromRecordBytes,
-    {
         if record.ty != ty {
             return Err(RecordParseError::UnexpectedType {
                 expected: ty,
@@ -411,9 +386,79 @@ impl<'a, 'b> RecordParser<'a, 'b> {
             });
         }
 
-        let (_, this) = all_consuming(T::parse)(record.data)?;
+        Ok(record)
+    }
 
-        Ok(this)
+    /// Requires the next record type is the the provided type
+    ///
+    /// Usually used for ensuring marker types exist
+    pub fn require_type(&mut self, ty: RecordType) -> Result<(), RecordParseError<'b>> {
+        _ = self.require_next_typed(ty)?;
+        Ok(())
+    }
+
+    /// Skips the next type ignoring whether it exists
+    pub fn skip_type(&mut self, ty: RecordType) {
+        self.record_iter.next_if(|record| record.ty == ty);
+    }
+
+    pub fn skip_while_type(&mut self, ty: RecordType) {
+        while self.record_iter.next_if(|record| record.ty == ty).is_some() {}
+    }
+
+    pub fn parse<T>(&mut self, ty: RecordType) -> Result<T, RecordParseError<'b>>
+    where
+        T: FromRecordBytes,
+    {
+        // Require the next record of the type
+        self.require_next_typed(ty)
+            // Parse the contents of the record
+            .and_then(|record| {
+                let (_, this) = all_consuming(T::parse)(record.data)?;
+                Ok(this)
+            })
+    }
+
+    pub fn parse_collection<T>(&mut self) -> Result<Vec<T>, RecordParseError<'b>>
+    where
+        T: RecordCollection,
+    {
+        let mut out = Vec::new();
+
+        while let Some(value) = T::parse_next(self)? {
+            out.push(value);
+        }
+
+        Ok(out)
+    }
+
+    pub fn try_parse<T>(&mut self, ty: RecordType) -> Result<Option<T>, RecordParseError<'b>>
+    where
+        T: FromRecordBytes,
+    {
+        self.record_iter
+            // Only take next record if the type matches
+            .next_if(|record| record.ty == ty)
+            // Attempt to parse the matching record
+            .map(|record| {
+                let (_, this) = all_consuming(T::parse)(record.data)?;
+                Ok(this)
+            })
+            // Flip the option to inside the result
+            .transpose()
+    }
+
+    /// Attempts to parse as many of the provided type as it can
+    /// storing them in a vec
+    pub fn try_parse_many<T>(&mut self, ty: RecordType) -> Result<Vec<T>, RecordParseError<'b>>
+    where
+        T: FromRecordBytes,
+    {
+        let mut out = Vec::new();
+        while let Some(value) = self.try_parse::<T>(ty)? {
+            out.push(value);
+        }
+        Ok(out)
     }
 }
 

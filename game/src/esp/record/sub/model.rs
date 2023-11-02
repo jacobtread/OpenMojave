@@ -27,59 +27,72 @@ pub struct ModelData {
 impl ModelData {
     pub fn parse_first<'b>(
         parser: &mut RecordParser<'_, 'b>,
-    ) -> Result<Self, RecordParseError<'b>> {
-        let model_file_name = parser.parse::<String>(MODL)?;
+    ) -> Result<Option<Self>, RecordParseError<'b>> {
+        let model_file_name = match parser.try_parse::<String>(MODL)? {
+            Some(value) => value,
+            None => return Ok(None),
+        };
         parser.skip_type(MODB);
         parser.skip_type(MODT);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MODS)?;
         let facegen_model_flags = parser.try_parse::<MODDFlags>(MODD)?;
 
-        Ok(ModelData {
+        Ok(Some(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags,
-        })
+        }))
     }
 
     pub fn parse_second<'b>(
         parser: &mut RecordParser<'_, 'b>,
-    ) -> Result<Self, RecordParseError<'b>> {
-        let model_file_name = parser.parse::<String>(MOD2)?;
+    ) -> Result<Option<Self>, RecordParseError<'b>> {
+        let model_file_name = match parser.try_parse::<String>(MOD2)? {
+            Some(value) => value,
+            None => return Ok(None),
+        };
         parser.skip_type(MO2T);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MO2S)?;
-        Ok(ModelData {
+        Ok(Some(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags: None,
-        })
+        }))
     }
 
     pub fn parse_third<'b>(
         parser: &mut RecordParser<'_, 'b>,
-    ) -> Result<Self, RecordParseError<'b>> {
-        let model_file_name = parser.parse::<String>(MOD3)?;
+    ) -> Result<Option<Self>, RecordParseError<'b>> {
+        let model_file_name = match parser.try_parse::<String>(MOD3)? {
+            Some(value) => value,
+            None => return Ok(None),
+        };
         parser.skip_type(MO3T);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MO3S)?;
         let facegen_model_flags = parser.try_parse::<MODDFlags>(MOSD)?;
 
-        Ok(ModelData {
+        Ok(Some(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags,
-        })
+        }))
     }
 
     pub fn parse_fourth<'b>(
         parser: &mut RecordParser<'_, 'b>,
-    ) -> Result<Self, RecordParseError<'b>> {
-        let model_file_name = parser.parse::<String>(MOD4)?;
+    ) -> Result<Option<Self>, RecordParseError<'b>> {
+        let model_file_name = match parser.try_parse::<String>(MOD4)? {
+            Some(value) => value,
+            None => return Ok(None),
+        };
+
         parser.skip_type(MO4T);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MO4S)?;
-        Ok(ModelData {
+        Ok(Some(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags: None,
-        })
+        }))
     }
 }
 

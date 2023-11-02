@@ -24,7 +24,8 @@ impl Record for HAIR {
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;
         let name = parser.parse::<String>(FULL)?;
-        let model_data = ModelData::parse_first(parser)?;
+        let model_data = ModelData::parse_first(parser)?
+            .ok_or_else(|| RecordParseError::Custom("Hair missing model data".to_string()))?;
         let texture = parser.parse::<String>(ICON)?;
         let flags = parser.parse::<Flags>(DATA)?;
         Ok(Self {

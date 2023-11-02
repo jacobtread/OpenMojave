@@ -1,6 +1,8 @@
 use super::RecordType;
 
+pub mod actor_values;
 pub mod model;
+pub mod xnam;
 
 pub const HEDR: RecordType = RecordType::from_value(b"HEDR");
 pub const MAST: RecordType = RecordType::from_value(b"MAST");
@@ -49,3 +51,15 @@ pub const MOD4: RecordType = RecordType::from_value(b"MOD4");
 pub const MO4T: RecordType = RecordType::from_value(b"MO4T");
 pub const MO4S: RecordType = RecordType::from_value(b"MO4S");
 pub const HNAM: RecordType = RecordType::from_value(b"HNAM");
+pub const INDX: RecordType = RecordType::from_value(b"INDX");
+pub const YNAM: RecordType = RecordType::from_value(b"YNAM");
+pub const NAM2: RecordType = RecordType::from_value(b"NAM2");
+pub const VTCK: RecordType = RecordType::from_value(b"VTCK");
+pub const PNAM: RecordType = RecordType::from_value(b"PNAM");
+pub const UNAM: RecordType = RecordType::from_value(b"UNAM");
+pub const NAM0: RecordType = RecordType::from_value(b"NAM0");
+pub const NAM1: RecordType = RecordType::from_value(b"NAM1");
+pub const ENAM: RecordType = RecordType::from_value(b"ENAM");
+pub const FGGS: RecordType = RecordType::from_value(b"FGGS");
+pub const FGGA: RecordType = RecordType::from_value(b"FGGA");
+pub const FGTS: RecordType = RecordType::from_value(b"FGTS");
