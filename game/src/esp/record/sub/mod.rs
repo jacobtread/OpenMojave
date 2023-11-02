@@ -20,3 +20,5 @@ pub const TX03: RecordType = RecordType::from_value(b"TX03");
 pub const TX04: RecordType = RecordType::from_value(b"TX04");
 pub const TX05: RecordType = RecordType::from_value(b"TX05");
 pub const DODT: RecordType = RecordType::from_value(b"DODT");
+pub const ICON: RecordType = RecordType::from_value(b"ICON");
+pub const MICO: RecordType = RecordType::from_value(b"MICO");
