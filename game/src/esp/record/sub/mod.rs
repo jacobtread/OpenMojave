@@ -3,6 +3,7 @@ use super::RecordType;
 pub mod actor_values;
 pub mod model;
 pub mod object_bounds;
+pub mod script;
 pub mod xnam;
 
 pub const HEDR: RecordType = RecordType::from_value(b"HEDR");
@@ -70,3 +71,9 @@ pub const ANAM: RecordType = RecordType::from_value(b"ANAM");
 pub const GNAM: RecordType = RecordType::from_value(b"GNAM");
 pub const WNAM: RecordType = RecordType::from_value(b"WNAM");
 pub const RDAT: RecordType = RecordType::from_value(b"RDAT");
+pub const SLSD: RecordType = RecordType::from_value(b"SLSD");
+pub const SCVR: RecordType = RecordType::from_value(b"SCVR");
+pub const SCHR: RecordType = RecordType::from_value(b"SCHR");
+pub const SCDA: RecordType = RecordType::from_value(b"SCDA");
+pub const SCTX: RecordType = RecordType::from_value(b"SCTX");
+pub const SCRO: RecordType = RecordType::from_value(b"SCRO");

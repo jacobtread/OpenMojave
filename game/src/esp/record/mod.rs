@@ -22,8 +22,6 @@ use std::{
 };
 use thiserror::Error;
 
-pub mod collection;
-
 pub mod records;
 pub mod sub;
 
@@ -329,6 +327,23 @@ impl FromRecordBytes for RawBytes {
     }
 }
 
+/// String created from the entirety of the sub record bytes
+pub struct FullString(pub String);
+
+impl FromRecordBytes for FullString {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(rest, |bytes: &[u8]| {
+            Self(String::from_utf8_lossy(bytes).to_string())
+        })(input)
+    }
+}
+
+impl FullString {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
 /// Collection of many repeated values from a sub-record
 pub struct Collection<T: FromRecordBytes>(pub Vec<T>);
 
@@ -382,7 +397,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
         if record.ty != ty {
             return Err(RecordParseError::UnexpectedType {
                 expected: ty,
-                actual: record.ty.clone(),
+                actual: record.ty,
             });
         }
 
