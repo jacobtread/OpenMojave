@@ -2,7 +2,10 @@ use bitflags::bitflags;
 use nom::{combinator::map, number::complete::u8, IResult};
 
 use crate::esp::{
-    record::{Record, RecordParseError, RecordParser, RecordType},
+    record::{
+        sub::{model::ModelData, DATA, EDID, FULL, HNAM},
+        Collection, FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
+    },
     shared::{EditorId, FormId},
 };
 
@@ -10,8 +13,8 @@ use crate::esp::{
 pub struct HDPT {
     pub editor_id: EditorId,
     pub name: String,
-    pub model_data: (),
-    pub data: Flags,
+    pub model_data: ModelData,
+    pub flags: Flags,
     pub extra_parts: Vec<FormId>,
 }
 
@@ -19,7 +22,20 @@ impl Record for HDPT {
     const TYPE: RecordType = RecordType::from_value(b"HDPT");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
-        todo!()
+        let editor_id = parser.parse::<EditorId>(EDID)?;
+        let name = parser.parse::<String>(FULL)?;
+        // TODO: Not sure if this field is optional documentation unclear
+        let model_data = ModelData::parse_first(parser)?;
+        let flags = parser.parse::<Flags>(DATA)?;
+        let extra_parts = parser.parse::<Collection<FormId>>(HNAM)?.into_inner();
+
+        Ok(Self {
+            editor_id,
+            name,
+            model_data,
+            flags,
+            extra_parts,
+        })
     }
 }
 
@@ -30,8 +46,8 @@ bitflags! {
     }
 }
 
-impl Flags {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+impl FromRecordBytes for Flags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(u8, Flags::from_bits_retain)(input)
     }
 }

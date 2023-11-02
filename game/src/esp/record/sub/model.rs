@@ -17,60 +17,64 @@ use super::{
     MO2S, MO2T, MO3S, MO3T, MO4S, MO4T, MOD2, MOD3, MOD4, MODB, MODD, MODL, MODS, MODT, MOSD,
 };
 
-pub struct Model {
+pub struct ModelData {
     pub model_file_name: String,
     pub alternative_textures: Option<AlternateTextures>,
     pub facegen_model_flags: Option<MODDFlags>,
 }
 
-impl Model {
-    pub fn from_first<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
+impl ModelData {
+    pub fn parse_first<'b>(
+        parser: &mut RecordParser<'_, 'b>,
+    ) -> Result<Self, RecordParseError<'b>> {
         let model_file_name = parser.parse::<String>(MODL)?;
         parser.skip_type(MODB);
         parser.skip_type(MODT);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MODS)?;
         let facegen_model_flags = parser.try_parse::<MODDFlags>(MODD)?;
 
-        Ok(Model {
+        Ok(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags,
         })
     }
 
-    pub fn from_second<'b>(
+    pub fn parse_second<'b>(
         parser: &mut RecordParser<'_, 'b>,
     ) -> Result<Self, RecordParseError<'b>> {
         let model_file_name = parser.parse::<String>(MOD2)?;
         parser.skip_type(MO2T);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MO2S)?;
-        Ok(Model {
+        Ok(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags: None,
         })
     }
 
-    pub fn from_third<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
+    pub fn parse_third<'b>(
+        parser: &mut RecordParser<'_, 'b>,
+    ) -> Result<Self, RecordParseError<'b>> {
         let model_file_name = parser.parse::<String>(MOD3)?;
         parser.skip_type(MO3T);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MO3S)?;
         let facegen_model_flags = parser.try_parse::<MODDFlags>(MOSD)?;
 
-        Ok(Model {
+        Ok(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags,
         })
     }
 
-    pub fn from_fourth<'b>(
+    pub fn parse_fourth<'b>(
         parser: &mut RecordParser<'_, 'b>,
     ) -> Result<Self, RecordParseError<'b>> {
         let model_file_name = parser.parse::<String>(MOD4)?;
         parser.skip_type(MO4T);
         let alternative_textures = parser.try_parse::<AlternateTextures>(MO4S)?;
-        Ok(Model {
+        Ok(ModelData {
             model_file_name,
             alternative_textures,
             facegen_model_flags: None,

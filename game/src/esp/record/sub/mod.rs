@@ -48,3 +48,4 @@ pub const MOSD: RecordType = RecordType::from_value(b"MOSD");
 pub const MOD4: RecordType = RecordType::from_value(b"MOD4");
 pub const MO4T: RecordType = RecordType::from_value(b"MO4T");
 pub const MO4S: RecordType = RecordType::from_value(b"MO4S");
+pub const HNAM: RecordType = RecordType::from_value(b"HNAM");
