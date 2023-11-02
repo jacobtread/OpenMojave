@@ -1,14 +1,22 @@
-use nom::combinator::{map, rest};
-use nom::IResult;
-
 use super::RecordType;
 
 pub const HEDR: RecordType = RecordType::from_value(b"HEDR");
 pub const MAST: RecordType = RecordType::from_value(b"MAST");
+pub const OFST: RecordType = RecordType::from_value(b"OFST");
+pub const DELE: RecordType = RecordType::from_value(b"DELE");
 pub const NAME: RecordType = RecordType::from_value(b"NAME");
 pub const CNAM: RecordType = RecordType::from_value(b"CNAM");
 pub const SNAM: RecordType = RecordType::from_value(b"SNAM");
 pub const ONAM: RecordType = RecordType::from_value(b"ONAM");
+pub const DNAM: RecordType = RecordType::from_value(b"DNAM");
 pub const EDID: RecordType = RecordType::from_value(b"EDID");
 pub const DATA: RecordType = RecordType::from_value(b"DATA");
 pub const XEZN: RecordType = RecordType::from_value(b"XEZN");
+pub const OBND: RecordType = RecordType::from_value(b"OBND");
+pub const TX00: RecordType = RecordType::from_value(b"TX00");
+pub const TX01: RecordType = RecordType::from_value(b"TX01");
+pub const TX02: RecordType = RecordType::from_value(b"TX02");
+pub const TX03: RecordType = RecordType::from_value(b"TX03");
+pub const TX04: RecordType = RecordType::from_value(b"TX04");
+pub const TX05: RecordType = RecordType::from_value(b"TX05");
+pub const DODT: RecordType = RecordType::from_value(b"DODT");

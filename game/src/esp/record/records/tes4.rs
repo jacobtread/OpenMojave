@@ -1,6 +1,6 @@
 use crate::esp::{
     record::{
-        sub::{CNAM, DATA, HEDR, MAST, ONAM, SNAM},
+        sub::{CNAM, DATA, DELE, HEDR, MAST, OFST, ONAM, SNAM},
         Collection, FromSubRecord, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::FormId,
@@ -12,8 +12,10 @@ use nom::{
     IResult,
 };
 
+/// Plugin Info
 #[derive(Debug)]
 pub struct TES4 {
+    // Contains additional details about the plugin
     pub hedr: HEDR,
     pub author: String,
     pub description: Option<String>,
@@ -27,8 +29,8 @@ impl Record for TES4 {
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let hedr = parser.parse::<HEDR>(HEDR)?;
 
-        parser.skip_type(RecordType::from_value(b"OFST"));
-        parser.skip_type(RecordType::from_value(b"DELE"));
+        parser.skip_type(OFST);
+        parser.skip_type(DELE);
 
         let author: String = parser.parse::<String>(CNAM)?;
         let description = parser.try_parse::<String>(SNAM)?;
@@ -37,7 +39,7 @@ impl Record for TES4 {
 
         // Consume master data collection
         while let Some(mast) = parser.try_parse::<String>(MAST)? {
-            // Data can be ignored as its not used
+            // Data can be ignored as its not used (It's usually 0)
             parser.skip_type(DATA);
             masters.push(mast);
         }

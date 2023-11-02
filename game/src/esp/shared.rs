@@ -2,7 +2,8 @@ use super::error::EspError;
 use super::record::FromSubRecord;
 use binrw::binrw;
 use nom::combinator::map;
-use nom::number::complete::le_u32;
+use nom::number::complete::{le_u32, u8};
+use nom::sequence::tuple;
 use nom::IResult;
 use std::fmt;
 use std::io::Read;
@@ -22,6 +23,27 @@ impl Deref for EditorId {
 impl FromSubRecord for EditorId {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(String::parse, Self)(input)
+    }
+}
+
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Debug, Clone, Copy)]
+pub struct RGBA {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
+    // Unused?
+    pub alpha: u8,
+}
+
+impl FromSubRecord for RGBA {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((u8, u8, u8, u8)), |(red, green, blue, alpha)| Self {
+            red,
+            green,
+            blue,
+            alpha,
+        })(input)
     }
 }
 

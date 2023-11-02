@@ -6,6 +6,7 @@ use crate::esp::{
     shared::EditorId,
 };
 
+/// Game setting
 #[derive(Debug)]
 pub struct GMST {
     pub editor_id: EditorId,
