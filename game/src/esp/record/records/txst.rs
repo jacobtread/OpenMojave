@@ -11,7 +11,7 @@ use nom::{
 use crate::esp::{
     record::{
         sub::{DNAM, DODT, EDID, OBND, TX00, TX01, TX02, TX03, TX04, TX05},
-        FromSubRecord, Record, RecordParseError, RecordParser, RecordType,
+        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::{EditorId, RGBA},
 };
@@ -37,7 +37,7 @@ bitflags! {
     }
 }
 
-impl FromSubRecord for TXSTFlags {
+impl FromRecordBytes for TXSTFlags {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(le_u16, TXSTFlags::from_bits_retain)(input)
     }
@@ -84,7 +84,7 @@ pub struct OBND {
     pub z2: i16,
 }
 
-impl FromSubRecord for OBND {
+impl FromRecordBytes for OBND {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(
             tuple((le_i16, le_i16, le_i16, le_i16, le_i16, le_i16)),
@@ -129,7 +129,7 @@ impl DODTFlags {
     }
 }
 
-impl FromSubRecord for DODT {
+impl FromRecordBytes for DODT {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(
             tuple((

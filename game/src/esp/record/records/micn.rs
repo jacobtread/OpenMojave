@@ -6,6 +6,7 @@ use crate::esp::{
     shared::EditorId,
 };
 
+/// Menu icon
 #[derive(Debug)]
 pub struct MICN {
     pub editor_id: EditorId,

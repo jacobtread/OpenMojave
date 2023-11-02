@@ -4,7 +4,7 @@ use bitflags::bitflags;
 use nom::bytes::complete::take;
 use nom::combinator::{all_consuming, map_res};
 use nom::multi::many0;
-use nom::number::complete::{le_f32, le_i16, le_i32, le_u16, le_u32, u8};
+use nom::number::complete::{i8, le_f32, le_i16, le_i32, le_u16, le_u32, u8};
 
 use super::shared::FormId;
 use crate::esp::record::records::tes4::TES4;
@@ -175,27 +175,12 @@ pub enum GroupType {
 }
 
 /// Parses an enum from a little endian u32 value
-pub fn enum_u32<E>(input: &[u8]) -> IResult<&[u8], E>
+pub fn enum_value<E>(input: &[u8]) -> IResult<&[u8], E>
 where
-    E: TryFromPrimitive<Primitive = u32>,
+    E: TryFromPrimitive,
+    E::Primitive: FromRecordBytes,
 {
-    map_res(le_u32, E::try_from_primitive)(input)
-}
-
-/// Parses an enum from a little endian u16 value
-pub fn enum_u16<E>(input: &[u8]) -> IResult<&[u8], E>
-where
-    E: TryFromPrimitive<Primitive = u16>,
-{
-    map_res(le_u16, E::try_from_primitive)(input)
-}
-
-/// Parses an enum from a u8 value
-pub fn enum_u8<E>(input: &[u8]) -> IResult<&[u8], E>
-where
-    E: TryFromPrimitive<Primitive = u8>,
-{
-    map_res(u8, E::try_from_primitive)(input)
+    map_res(E::Primitive::parse, E::try_from_primitive)(input)
 }
 
 #[derive(Debug)]
@@ -262,7 +247,7 @@ impl RawGroup<'_> {
     pub fn parse(input: &[u8]) -> IResult<&[u8], RawGroup<'_>> {
         let (input, size) = le_u32(input)?;
         let (input, label) = le_u32(input)?;
-        let (input, ty) = enum_u32::<GroupType>(input)?;
+        let (input, ty) = enum_value::<GroupType>(input)?;
         let (input, stamp) = le_u16(input)?;
         let (input, _unknown) = take(6usize)(input)?;
         let (input, data) = take(size - Self::HEADER_LENGTH)(input)?;
@@ -325,16 +310,16 @@ impl Debug for RecordType {
 }
 
 /// Trait for types that can be extracted from a sub record
-pub trait FromSubRecord: Sized {
+pub trait FromRecordBytes: Sized {
     fn parse(input: &[u8]) -> IResult<&[u8], Self>;
 }
 
 /// Collection of many repeated values from a sub-record
-pub struct Collection<T: FromSubRecord>(pub Vec<T>);
+pub struct Collection<T: FromRecordBytes>(pub Vec<T>);
 
-impl<T> FromSubRecord for Collection<T>
+impl<T> FromRecordBytes for Collection<T>
 where
-    T: FromSubRecord,
+    T: FromRecordBytes,
 {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(many0(T::parse), Self)(input)
@@ -343,7 +328,7 @@ where
 
 impl<T> Collection<T>
 where
-    T: FromSubRecord,
+    T: FromRecordBytes,
 {
     pub fn into_inner(self) -> Vec<T> {
         self.0
@@ -368,7 +353,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
 
     pub fn parse<T>(&mut self, ty: RecordType) -> Result<T, RecordParseError<'b>>
     where
-        T: FromSubRecord,
+        T: FromRecordBytes,
     {
         let record = self
             .sub_iter
@@ -380,7 +365,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
 
     pub fn try_parse<T>(&mut self, ty: RecordType) -> Result<Option<T>, RecordParseError<'b>>
     where
-        T: FromSubRecord,
+        T: FromRecordBytes,
     {
         let record = match self.sub_iter.peek() {
             Some(value) => *value,
@@ -402,7 +387,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
         record: &'a RawSubRecord<'b>,
     ) -> Result<Option<T>, RecordParseError<'b>>
     where
-        T: FromSubRecord,
+        T: FromRecordBytes,
     {
         match Self::parse_record(ty, record) {
             Ok(value) => Ok(Some(value)),
@@ -417,7 +402,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
         record: &'a RawSubRecord<'b>,
     ) -> Result<T, RecordParseError<'b>>
     where
-        T: FromSubRecord,
+        T: FromRecordBytes,
     {
         if record.ty != ty {
             return Err(RecordParseError::UnexpectedType {
@@ -465,45 +450,59 @@ impl<'a> From<nom::Err<nom::error::Error<&'a [u8]>>> for RecordParseError<'a> {
     }
 }
 
-impl FromSubRecord for String {
+impl FromRecordBytes for String {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         parse_string(input)
     }
 }
 
-impl FromSubRecord for f32 {
+impl FromRecordBytes for f32 {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         le_f32(input)
     }
 }
 
-impl FromSubRecord for i32 {
+impl FromRecordBytes for i32 {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         le_i32(input)
     }
 }
 
-impl FromSubRecord for u32 {
+impl FromRecordBytes for u32 {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         le_u32(input)
     }
 }
 
-impl FromSubRecord for i16 {
+impl FromRecordBytes for i16 {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         le_i16(input)
     }
 }
 
-impl FromSubRecord for u16 {
+impl FromRecordBytes for u16 {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         le_u16(input)
+    }
+}
+
+impl FromRecordBytes for u8 {
+    #[inline]
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        u8(input)
+    }
+}
+
+impl FromRecordBytes for i8 {
+    #[inline]
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        i8(input)
     }
 }
 

@@ -1,5 +1,5 @@
 use super::error::EspError;
-use super::record::FromSubRecord;
+use super::record::FromRecordBytes;
 use binrw::binrw;
 use nom::combinator::map;
 use nom::number::complete::{le_u32, u8};
@@ -20,7 +20,7 @@ impl Deref for EditorId {
     }
 }
 
-impl FromSubRecord for EditorId {
+impl FromRecordBytes for EditorId {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(String::parse, Self)(input)
     }
@@ -36,7 +36,7 @@ pub struct RGBA {
     pub alpha: u8,
 }
 
-impl FromSubRecord for RGBA {
+impl FromRecordBytes for RGBA {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(tuple((u8, u8, u8, u8)), |(red, green, blue, alpha)| Self {
             red,
@@ -52,7 +52,7 @@ impl FromSubRecord for RGBA {
 #[derive(Debug, Clone)]
 pub struct FormId(pub u32);
 
-impl FromSubRecord for FormId {
+impl FromRecordBytes for FormId {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(le_u32, FormId)(input)
     }

@@ -1,7 +1,7 @@
 use crate::esp::{
     record::{
         sub::{CNAM, DATA, DELE, HEDR, MAST, OFST, ONAM, SNAM},
-        Collection, FromSubRecord, Record, RecordParseError, RecordParser, RecordType,
+        Collection, FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::FormId,
 };
@@ -71,7 +71,7 @@ pub struct HEDR {
     pub next_object_id: u32,
 }
 
-impl FromSubRecord for HEDR {
+impl FromRecordBytes for HEDR {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(
             tuple((le_f32, le_u32, le_u32)),
