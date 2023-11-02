@@ -1,7 +1,7 @@
 
 ![Logo](./images/logo.svg)
 
-> VERY EARLY STAGES
+> VERY EARLY STAGES this is a hobby side project 
 
 This is intended to be an open-source re-implementation of Fallout: New Vegas that is capable of running and using the original game assets (You'd have to get these yourself of course) 
 
@@ -15,8 +15,13 @@ I've started working on getting the basic menu working which you can see below:
 ![Demo menu](images/menu.png)
 
 
+## Whats currently being worked on
 
+Below is the things that im currently working on
 
+- ESM file format parsing using https://tes5edit.github.io/fopdoc/
+- Adapting and improving the engine as relevant improvements arrise from usage
+ 
 
 ## Whats done
 
@@ -24,6 +29,7 @@ I've started working on getting the basic menu working which you can see below:
   - .bsa packed asset format can be loaded by the engine and the resources within can be used
 - [x] Font loading and rendering
   - The .fnt bitmap fonts for the game can be loaded and used in the UI
+- [x] Basic parsing of .esm / .esp file format (records and group parsing, but still working on parsing individual structures)
 
 ## Whats not done
 
