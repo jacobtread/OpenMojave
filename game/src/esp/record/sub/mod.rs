@@ -1,5 +1,7 @@
 use super::RecordType;
 
+pub mod model;
+
 pub const HEDR: RecordType = RecordType::from_value(b"HEDR");
 pub const MAST: RecordType = RecordType::from_value(b"MAST");
 pub const OFST: RecordType = RecordType::from_value(b"OFST");
@@ -31,3 +33,18 @@ pub const MNAM: RecordType = RecordType::from_value(b"MNAM");
 pub const FNAM: RecordType = RecordType::from_value(b"FNAM");
 pub const INAM: RecordType = RecordType::from_value(b"INAM");
 pub const WMI1: RecordType = RecordType::from_value(b"WMI1");
+pub const MODL: RecordType = RecordType::from_value(b"MODL");
+pub const MODB: RecordType = RecordType::from_value(b"MODB");
+pub const MODT: RecordType = RecordType::from_value(b"MODT");
+pub const MODS: RecordType = RecordType::from_value(b"MODS");
+pub const MODD: RecordType = RecordType::from_value(b"MODD");
+pub const MOD2: RecordType = RecordType::from_value(b"MOD2");
+pub const MO2T: RecordType = RecordType::from_value(b"MO2T");
+pub const MO2S: RecordType = RecordType::from_value(b"MO2S");
+pub const MOD3: RecordType = RecordType::from_value(b"MOD3");
+pub const MO3T: RecordType = RecordType::from_value(b"MO3T");
+pub const MO3S: RecordType = RecordType::from_value(b"MO3S");
+pub const MOSD: RecordType = RecordType::from_value(b"MOSD");
+pub const MOD4: RecordType = RecordType::from_value(b"MOD4");
+pub const MO4T: RecordType = RecordType::from_value(b"MO4T");
+pub const MO4S: RecordType = RecordType::from_value(b"MO4S");

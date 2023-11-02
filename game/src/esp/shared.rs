@@ -1,8 +1,10 @@
 use super::error::EspError;
 use super::record::FromRecordBytes;
 use binrw::binrw;
-use nom::combinator::map;
-use nom::number::complete::{le_u32, u8};
+use nom::bytes::complete;
+use nom::combinator::{complete, map};
+use nom::multi::{length_data, length_value};
+use nom::number::complete::{be_u16, le_u16, le_u32, u8};
 use nom::sequence::tuple;
 use nom::IResult;
 use std::fmt;
@@ -58,72 +60,30 @@ impl FromRecordBytes for FormId {
     }
 }
 
-impl FormId {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], FormId> {
-        map(le_u32, FormId)(input)
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum LocalizedString {
     Localized(u32),
     ZString(String),
 }
 
-/// Requires that the provided reader has no remaining bytes
-/// left or else a [`EspError::ExtraBytes`] error is returned
-pub fn require_complete<R>(reader: &mut R) -> Result<(), EspError>
-where
-    R: Read,
-{
-    let mut remaining = Vec::new();
-    reader.read_to_end(&mut remaining)?;
+/// String where the length is provided by a leading u16 value
+pub struct String16(pub String);
 
-    if remaining.is_empty() {
-        Ok(())
-    } else {
-        Err(EspError::ExtraBytes(remaining))
+impl FromRecordBytes for String16 {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(length_data(le_u16), |bytes| {
+            Self(String::from_utf8_lossy(bytes).to_string())
+        })(input)
     }
 }
 
-#[binrw]
-#[brw(little)]
-#[derive(Clone)]
-pub struct WString {
-    pub size: u16,
-    #[br(count = size)]
-    pub data: Vec<u8>,
-}
+/// String where the length is provided by a leading u32 value
+pub struct String32(pub String);
 
-impl fmt::Debug for WString {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "\"{}\"", String::from_utf8_lossy(&self.data))
-    }
-}
-
-impl fmt::Display for WString {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", String::from_utf8_lossy(&self.data[..]))
-    }
-}
-
-#[binrw]
-#[brw(little)]
-#[derive(Clone)]
-pub struct WString32 {
-    pub size: u32,
-    #[br(count = size)]
-    pub data: Vec<u8>,
-}
-
-impl fmt::Debug for WString32 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "\"{}\"", String::from_utf8_lossy(&self.data))
-    }
-}
-
-impl fmt::Display for WString32 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", String::from_utf8_lossy(&self.data[..]))
+impl FromRecordBytes for String32 {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(length_data(le_u32), |bytes| {
+            Self(String::from_utf8_lossy(bytes).to_string())
+        })(input)
     }
 }

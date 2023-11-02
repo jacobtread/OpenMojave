@@ -129,6 +129,7 @@ impl FACTFlags1 {
         map(u8, FACTFlags1::from_bits_retain)(input)
     }
 }
+
 bitflags! {
     #[derive(Debug, Clone, Copy)]
     pub struct FACTFlags2: u8 {
