@@ -53,22 +53,25 @@ impl FromRecordBytes for RGBA {
 
 /// Represents a FormId of a specific type
 pub struct TypedFormId<T> {
-    pub id: u32,
+    pub id: FormId,
     pub _marker: PhantomData<T>,
+}
+
+impl<T> TypedFormId<T> {
+    pub fn is_null(&self) -> bool {
+        self.id.is_null()
+    }
 }
 
 impl<T> Debug for TypedFormId<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "TypedFormId<{}>({:#06x})", type_name::<T>(), self.id)
+        write!(f, "TypedFormId<{}>({:#06x})", type_name::<T>(), self.id.0)
     }
 }
 
 impl<T> FromRecordBytes for TypedFormId<T> {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(le_u32, |id| Self {
-            id,
-            _marker: PhantomData,
-        })(input)
+        map(FormId::parse, FormId::into_typed)(input)
     }
 }
 
@@ -78,6 +81,22 @@ pub struct FormId(pub u32);
 impl FromRecordBytes for FormId {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(le_u32, FormId)(input)
+    }
+}
+
+impl FormId {
+    pub const NULL_RAW: u32 = 0;
+    pub const NULL: FormId = FormId(Self::NULL_RAW);
+
+    pub fn is_null(&self) -> bool {
+        self.0 == Self::NULL_RAW
+    }
+
+    pub fn into_typed<T>(self) -> TypedFormId<T> {
+        TypedFormId {
+            id: self,
+            _marker: PhantomData,
+        }
     }
 }
 

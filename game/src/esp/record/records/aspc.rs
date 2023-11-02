@@ -23,19 +23,19 @@ pub struct ASPC {
     pub editor_id: EditorId,
     /// Bounds of the space object
     pub object_bounds: ObjectBounds,
-    /// The optional sound thats played by default within this space
-    pub default_loop: Option<SoundRecord>,
-    /// The optional sound played during the afternoon
-    pub afternoon: Option<SoundRecord>,
-    /// The optional sound played at dusk
-    pub dusk: Option<SoundRecord>,
-    /// The optional sound played at night
-    pub night: Option<SoundRecord>,
-    /// The optional crowd murmor background sound
-    pub walla: Option<SoundRecord>,
+    /// Nullable sound thats played by default within this space
+    pub default_loop: SoundRecord,
+    /// Nullable sound played during the afternoon
+    pub afternoon: SoundRecord,
+    /// Nullable sound played at dusk
+    pub dusk: SoundRecord,
+    /// Nullable sound played at night
+    pub night: SoundRecord,
+    /// Nullable crowd murmor background sound
+    pub walla: SoundRecord,
     /// The number of entities required to trigger the walla sound
     pub walla_trigger_count: u32,
-    /// Optionally use sound from a region (Interiors only)
+    /// Optionally use sound from a region (Nullable) (Interiors only)
     pub use_region_sound: Option<FormId /* REGN */>,
     /// The type of environment
     pub env_type: EnvironmentType,
@@ -49,11 +49,11 @@ impl Record for ASPC {
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;
         let object_bounds = parser.parse::<ObjectBounds>(OBND)?;
-        let default_loop = parser.parse::<Option<SoundRecord>>(SNAM)?;
-        let afternoon = parser.parse::<Option<SoundRecord>>(SNAM)?;
-        let dusk = parser.parse::<Option<SoundRecord>>(SNAM)?;
-        let night = parser.parse::<Option<SoundRecord>>(SNAM)?;
-        let walla = parser.parse::<Option<SoundRecord>>(SNAM)?;
+        let default_loop = parser.parse::<SoundRecord>(SNAM)?;
+        let afternoon = parser.parse::<SoundRecord>(SNAM)?;
+        let dusk = parser.parse::<SoundRecord>(SNAM)?;
+        let night = parser.parse::<SoundRecord>(SNAM)?;
+        let walla = parser.parse::<SoundRecord>(SNAM)?;
         let walla_trigger_count = parser.parse::<u32>(WNAM)?;
         let use_region_sound = parser.try_parse::<FormId>(RDAT)?;
         let env_type = parser.parse::<EnvironmentType>(ANAM)?;
