@@ -63,3 +63,7 @@ pub const ENAM: RecordType = RecordType::from_value(b"ENAM");
 pub const FGGS: RecordType = RecordType::from_value(b"FGGS");
 pub const FGGA: RecordType = RecordType::from_value(b"FGGA");
 pub const FGTS: RecordType = RecordType::from_value(b"FGTS");
+pub const SNDD: RecordType = RecordType::from_value(b"SNDD");
+pub const SNDX: RecordType = RecordType::from_value(b"SNDX");
+pub const ANAM: RecordType = RecordType::from_value(b"ANAM");
+pub const GNAM: RecordType = RecordType::from_value(b"GNAM");

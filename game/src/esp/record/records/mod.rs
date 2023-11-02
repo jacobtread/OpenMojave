@@ -6,5 +6,6 @@ pub mod hair;
 pub mod hdpt;
 pub mod micn;
 pub mod race;
+pub mod soun;
 pub mod tes4;
 pub mod txst;

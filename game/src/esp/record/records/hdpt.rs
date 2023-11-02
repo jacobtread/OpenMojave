@@ -48,6 +48,6 @@ bitflags! {
 
 impl FromRecordBytes for Flags {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(u8, Flags::from_bits_retain)(input)
+        map(u8, Self::from_bits_retain)(input)
     }
 }
