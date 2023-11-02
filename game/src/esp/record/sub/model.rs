@@ -17,6 +17,7 @@ use super::{
     MO2S, MO2T, MO3S, MO3T, MO4S, MO4T, MOD2, MOD3, MOD4, MODB, MODD, MODL, MODS, MODT, MOSD,
 };
 
+#[derive(Debug)]
 pub struct ModelData {
     pub model_file_name: String,
     pub alternative_textures: Option<AlternateTextures>,
@@ -98,6 +99,7 @@ impl FromRecordBytes for MODDFlags {
     }
 }
 
+#[derive(Debug)]
 pub struct AlternateTextures(pub Vec<AlternateTexture>);
 
 impl FromRecordBytes for AlternateTextures {
@@ -106,6 +108,7 @@ impl FromRecordBytes for AlternateTextures {
     }
 }
 
+#[derive(Debug)]
 pub struct AlternateTexture {
     pub name_3d: String,
     pub new_texture: FormId,
