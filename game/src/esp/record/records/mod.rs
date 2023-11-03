@@ -3,6 +3,7 @@ pub mod armo;
 pub mod aspc;
 pub mod book;
 pub mod clas;
+pub mod cont;
 pub mod ench;
 pub mod eyes;
 pub mod fact;
