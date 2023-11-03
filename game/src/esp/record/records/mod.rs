@@ -4,6 +4,7 @@ pub mod aspc;
 pub mod book;
 pub mod clas;
 pub mod cont;
+pub mod door;
 pub mod ench;
 pub mod eyes;
 pub mod fact;
