@@ -570,6 +570,11 @@ impl FromRecordBytes for i8 {
         i8(input)
     }
 }
+impl FromRecordBytes for bool {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(u8, |value| value != 0)(input)
+    }
+}
 
 #[test]
 fn test_parse() {

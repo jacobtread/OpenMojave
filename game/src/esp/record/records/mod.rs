@@ -1,4 +1,5 @@
 pub mod acti;
+pub mod armo;
 pub mod aspc;
 pub mod clas;
 pub mod ench;
