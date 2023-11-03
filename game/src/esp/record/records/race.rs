@@ -13,7 +13,7 @@ use crate::esp::{
     record::{
         enum_value,
         sub::{
-            actor_values::ActorValues, model::ModelData, xnam::XNAM, ATTR, CNAM, DATA, DESC, DNAM,
+            actor_values::ActorValue, model::ModelData, xnam::XNAM, ATTR, CNAM, DATA, DESC, DNAM,
             EDID, ENAM, FGGA, FGGS, FGTS, FNAM, FULL, HNAM, ICON, INDX, MICO, MNAM, NAM0, NAM1,
             NAM2, ONAM, PNAM, SNAM, UNAM, VTCK, XNAM, YNAM,
         },
@@ -310,13 +310,13 @@ impl FromRecordBytes for RaceData {
 
 #[derive(Debug)]
 pub struct SkillBoost {
-    pub skill: ActorValues,
+    pub skill: ActorValue,
     pub boost: i8,
 }
 
 impl FromRecordBytes for SkillBoost {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((enum_value::<ActorValues>, i8)), |(skill, boost)| {
+        map(tuple((enum_value::<ActorValue>, i8)), |(skill, boost)| {
             Self { skill, boost }
         })(input)
     }

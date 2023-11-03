@@ -2,7 +2,7 @@ use num_enum::TryFromPrimitive;
 
 #[derive(Debug, Clone, Copy, TryFromPrimitive, PartialEq, Eq)]
 #[repr(i8)]
-pub enum ActorValues {
+pub enum ActorValue {
     None = -1,
     Aggression = 0,
     Confidence = 1,

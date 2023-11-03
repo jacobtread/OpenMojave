@@ -9,7 +9,7 @@ use num_enum::TryFromPrimitive;
 use crate::esp::{
     record::{
         enum_value,
-        sub::{actor_values::ActorValues, model::ModelData, DATA, DESC, EDID, FULL, ICON, MICO},
+        sub::{actor_values::ActorValue, model::ModelData, DATA, DESC, EDID, FULL, ICON, MICO},
         FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
     },
     shared::{EditorId, FormId, TypedFormId},
@@ -58,7 +58,7 @@ pub struct MagicEffectData {
     pub flags: Flags,
     pub base_cost: f32,
     pub associated_item: FormId,
-    pub resistance_type: ActorValues,
+    pub resistance_type: ActorValue,
     pub light: TypedFormId<() /* LIGH */>,
     pub projectile_speed: f32,
     pub effect_shader: TypedFormId<() /* EFSH */>,
@@ -68,7 +68,7 @@ pub struct MagicEffectData {
     pub hit_sound: TypedFormId<SOUN>,
     pub area_sound: TypedFormId<SOUN>,
     pub archtype: Archtype,
-    pub actor_value: ActorValues,
+    pub actor_value: ActorValue,
 }
 
 impl FromRecordBytes for MagicEffectData {
@@ -77,7 +77,7 @@ impl FromRecordBytes for MagicEffectData {
         let (input, base_cost) = le_f32(input)?;
         let (input, associated_item) = FormId::parse(input)?;
         let (input, _magic_school) = le_i32(input)?;
-        let (input, resistance_type) = enum_value::<ActorValues>(input)?;
+        let (input, resistance_type) = enum_value::<ActorValue>(input)?;
         let (input, _unknown) = le_u16(input)?;
         let (input, _unused) = le_u16(input)?;
         let (input, light) = <TypedFormId<()>>::parse(input)?;
@@ -95,7 +95,7 @@ impl FromRecordBytes for MagicEffectData {
         let (input, _unused) = le_f32(input)?;
 
         let (input, archtype) = enum_value::<Archtype>(input)?;
-        let (input, actor_value) = enum_value::<ActorValues>(input)?;
+        let (input, actor_value) = enum_value::<ActorValue>(input)?;
 
         Ok((
             input,

@@ -38,6 +38,11 @@ pub fn parse_string(input: &[u8]) -> IResult<&[u8], String> {
     )(input)
 }
 
+/// Takes 4 bytes from the input returning them as a fixed length array
+pub fn take4(input: &[u8]) -> IResult<&[u8], [u8; 4]> {
+    map_res(take(4usize), TryInto::try_into)(input)
+}
+
 bitflags! {
     #[derive(Debug, Clone)]
     pub struct RecordFlags: u32 {
