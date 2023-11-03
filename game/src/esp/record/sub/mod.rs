@@ -8,6 +8,7 @@ pub mod equipment_type;
 pub mod model;
 pub mod object_bounds;
 pub mod script;
+pub mod skill;
 pub mod xnam;
 
 pub const HEDR: RecordType = RecordType::from_value(b"HEDR");

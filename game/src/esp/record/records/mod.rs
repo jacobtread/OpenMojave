@@ -1,6 +1,7 @@
 pub mod acti;
 pub mod armo;
 pub mod aspc;
+pub mod book;
 pub mod clas;
 pub mod ench;
 pub mod eyes;
