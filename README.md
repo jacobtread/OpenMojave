@@ -19,7 +19,7 @@ I've started working on getting the basic menu working which you can see below:
 
 Below is the things that im currently working on
 
-- ESM file format parsing using https://tes5edit.github.io/fopdoc/ (24/102 records)
+- ESM file format parsing using https://tes5edit.github.io/fopdoc/ (25/102 records)
 - Adapting and improving the engine as relevant improvements arrise from usage
  
 
