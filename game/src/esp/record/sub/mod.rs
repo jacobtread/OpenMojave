@@ -77,3 +77,4 @@ pub const SCHR: RecordType = RecordType::from_value(b"SCHR");
 pub const SCDA: RecordType = RecordType::from_value(b"SCDA");
 pub const SCTX: RecordType = RecordType::from_value(b"SCTX");
 pub const SCRO: RecordType = RecordType::from_value(b"SCRO");
+pub const TNAM: RecordType = RecordType::from_value(b"TNAM");

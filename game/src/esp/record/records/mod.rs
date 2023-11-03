@@ -5,6 +5,7 @@ pub mod fact;
 pub mod gmst;
 pub mod hair;
 pub mod hdpt;
+pub mod ltex;
 pub mod mgef;
 pub mod micn;
 pub mod race;
