@@ -21,6 +21,7 @@ pub mod race;
 pub mod scpt;
 pub mod soun;
 pub mod spel;
+pub mod stat;
 pub mod tact;
 pub mod term;
 pub mod tes4;

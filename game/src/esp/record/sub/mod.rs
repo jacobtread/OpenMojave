@@ -110,3 +110,4 @@ pub const BNAM: RecordType = RecordType::from_value(b"BNAM");
 pub const CNTO: RecordType = RecordType::from_value(b"CNTO");
 pub const COED: RecordType = RecordType::from_value(b"COED");
 pub const QNAM: RecordType = RecordType::from_value(b"QNAM");
+pub const BRUS: RecordType = RecordType::from_value(b"BRUS");
