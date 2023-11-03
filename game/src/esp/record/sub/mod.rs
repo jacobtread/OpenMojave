@@ -83,3 +83,4 @@ pub const TNAM: RecordType = RecordType::from_value(b"TNAM");
 pub const EFIT: RecordType = RecordType::from_value(b"EFIT");
 pub const CTDA: RecordType = RecordType::from_value(b"CTDA");
 pub const ENIT: RecordType = RecordType::from_value(b"ENIT");
+pub const SPIT: RecordType = RecordType::from_value(b"SPIT");
