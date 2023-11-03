@@ -16,6 +16,7 @@ pub mod ligh;
 pub mod ltex;
 pub mod mgef;
 pub mod micn;
+pub mod misc;
 pub mod race;
 pub mod scpt;
 pub mod soun;
