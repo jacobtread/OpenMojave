@@ -74,9 +74,9 @@ bitflags! {
     }
 }
 
-impl CLASDataFlags {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(le_u32, CLASDataFlags::from_bits_retain)(input)
+impl FromRecordBytes for CLASDataFlags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u32, Self::from_bits_retain)(input)
     }
 }
 
