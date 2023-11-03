@@ -1,8 +1,8 @@
 use crate::esp::{
     record::{
         sub::{
-            destruction::Destruction, model::ModelData, object_bounds::ObjectBounds, EDID, FULL,
-            INAM, OBND, SCRI, SNAM, VNAM,
+            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, EDID,
+            FULL, INAM, OBND, SCRI, SNAM, VNAM,
         },
         Record, RecordCollection, RecordParseError, RecordParser, RecordType,
     },
@@ -19,7 +19,7 @@ pub struct TACT {
     pub name: Option<String>,
     pub model_data: ModelData,
     pub script: Option<TypedFormId<SCPT>>,
-    pub destruction_data: Option<Destruction>,
+    pub destruction_data: Option<DestructionData>,
     pub sound_looping: Option<TypedFormId<SOUN>>,
     pub voice_type: Option<TypedFormId<() /* VTYP */>>,
     pub radio_template: Option<TypedFormId<SOUN>>,
@@ -35,7 +35,7 @@ impl Record for TACT {
         let model_data: ModelData = ModelData::parse_first(parser)?
             .ok_or_else(|| RecordParseError::Custom("Missing model data for TACT".to_string()))?;
         let script: Option<TypedFormId<SCPT>> = parser.try_parse(SCRI)?;
-        let destruction_data: Option<Destruction> = Destruction::parse_next(parser)?;
+        let destruction_data: Option<DestructionData> = DestructionData::parse_next(parser)?;
         let sound_looping: Option<TypedFormId<SOUN>> = parser.try_parse(SNAM)?;
         let voice_type: Option<TypedFormId<()>> = parser.try_parse(VNAM)?;
         let radio_template: Option<TypedFormId<SOUN>> = parser.try_parse(INAM)?;

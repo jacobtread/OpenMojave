@@ -14,12 +14,12 @@ use crate::esp::{
 use super::{DEST, DMDL, DMDT, DSTD, DSTF};
 
 #[derive(Debug)]
-pub struct Destruction {
+pub struct DestructionData {
     pub header: DEST,
     pub stages: Vec<DestructionStage>,
 }
 
-impl RecordCollection for Destruction {
+impl RecordCollection for DestructionData {
     fn parse_next<'b>(
         parser: &mut crate::esp::record::RecordParser<'_, 'b>,
     ) -> Result<Option<Self>, crate::esp::record::RecordParseError<'b>> {

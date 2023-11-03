@@ -15,5 +15,6 @@ pub mod scpt;
 pub mod soun;
 pub mod spel;
 pub mod tact;
+pub mod term;
 pub mod tes4;
 pub mod txst;

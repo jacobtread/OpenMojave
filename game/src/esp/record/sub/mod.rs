@@ -93,3 +93,4 @@ pub const DEST: RecordType = RecordType::from_value(b"DEST");
 pub const SCRI: RecordType = RecordType::from_value(b"SCRI");
 pub const VNAM: RecordType = RecordType::from_value(b"VNAM");
 pub const XATO: RecordType = RecordType::from_value(b"XATO");
+pub const ITXT: RecordType = RecordType::from_value(b"ITXT");

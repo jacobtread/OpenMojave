@@ -1,8 +1,8 @@
 use crate::esp::{
     record::{
         sub::{
-            destruction::Destruction, model::ModelData, object_bounds::ObjectBounds, EDID, FULL,
-            INAM, OBND, RNAM, SCRI, SNAM, VNAM, WNAM, XATO,
+            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, EDID,
+            FULL, INAM, OBND, RNAM, SCRI, SNAM, VNAM, WNAM, XATO,
         },
         Record, RecordCollection, RecordType,
     },
@@ -19,7 +19,7 @@ pub struct ACTI {
     pub name: Option<String>,
     pub model_data: Option<ModelData>,
     pub script: Option<TypedFormId<SCPT>>,
-    pub destruction_data: Option<Destruction>,
+    pub destruction_data: Option<DestructionData>,
     pub sound_looping: Option<TypedFormId<SOUN>>,
     pub sound_activation: Option<TypedFormId<SOUN>>,
     pub radio_template: Option<TypedFormId<SOUN>>,
@@ -39,7 +39,7 @@ impl Record for ACTI {
         let name: Option<String> = parser.try_parse(FULL)?;
         let model_data: Option<ModelData> = ModelData::parse_first(parser)?;
         let script: Option<TypedFormId<SCPT>> = parser.try_parse(SCRI)?;
-        let destruction_data: Option<Destruction> = Destruction::parse_next(parser)?;
+        let destruction_data: Option<DestructionData> = DestructionData::parse_next(parser)?;
         let sound_looping: Option<TypedFormId<SOUN>> = parser.try_parse(SNAM)?;
         let sound_activation: Option<TypedFormId<SOUN>> = parser.try_parse(VNAM)?;
         let radio_template: Option<TypedFormId<SOUN>> = parser.try_parse(INAM)?;
