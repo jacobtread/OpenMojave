@@ -24,7 +24,7 @@ pub struct TES4 {
 }
 
 impl Record for TES4 {
-    const TYPE: RecordType = RecordType::from_value(b"TES4");
+    const TYPE: RecordType = RecordType::new(b"TES4");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let hedr = parser.parse::<HEDR>(HEDR)?;
@@ -48,7 +48,7 @@ impl Record for TES4 {
             .try_parse::<Collection<FormId>>(ONAM)?
             .map(Collection::into_inner);
 
-        parser.skip_type(RecordType::from_value(b"DELE"));
+        parser.skip_type(RecordType::new(b"DELE"));
 
         Ok(Self {
             hedr,

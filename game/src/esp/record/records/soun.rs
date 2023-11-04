@@ -28,7 +28,7 @@ pub struct SOUN {
 }
 
 impl Record for SOUN {
-    const TYPE: RecordType = RecordType::from_value(b"SOUN");
+    const TYPE: RecordType = RecordType::new(b"SOUN");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

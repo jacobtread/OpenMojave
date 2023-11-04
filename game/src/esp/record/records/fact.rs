@@ -19,7 +19,7 @@ pub struct FACT {
 }
 
 impl Record for FACT {
-    const TYPE: RecordType = RecordType::from_value(b"FACT");
+    const TYPE: RecordType = RecordType::new(b"FACT");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

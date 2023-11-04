@@ -21,7 +21,7 @@ pub struct GRAS {
 }
 
 impl Record for GRAS {
-    const TYPE: RecordType = RecordType::from_value(b"GRAS");
+    const TYPE: RecordType = RecordType::new(b"GRAS");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

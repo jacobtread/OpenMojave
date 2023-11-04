@@ -25,7 +25,7 @@ pub struct LTEX {
 }
 
 impl Record for LTEX {
-    const TYPE: RecordType = RecordType::from_value(b"LTEX");
+    const TYPE: RecordType = RecordType::new(b"LTEX");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

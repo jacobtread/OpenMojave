@@ -24,7 +24,7 @@ pub struct MSTT {
 }
 
 impl Record for MSTT {
-    const TYPE: RecordType = RecordType::from_value(b"MSTT");
+    const TYPE: RecordType = RecordType::new(b"MSTT");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

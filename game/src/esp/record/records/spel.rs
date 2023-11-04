@@ -27,7 +27,7 @@ pub struct SPEL {
 }
 
 impl Record for SPEL {
-    const TYPE: RecordType = RecordType::from_value(b"SPEL");
+    const TYPE: RecordType = RecordType::new(b"SPEL");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

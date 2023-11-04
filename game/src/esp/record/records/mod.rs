@@ -16,6 +16,7 @@ pub mod door;
 pub mod ench;
 pub mod eyes;
 pub mod fact;
+pub mod furn;
 pub mod gmst;
 pub mod gras;
 pub mod hair;

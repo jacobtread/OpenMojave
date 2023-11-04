@@ -21,7 +21,7 @@ pub enum GMSTValue {
 }
 
 impl Record for GMST {
-    const TYPE: RecordType = RecordType::from_value(b"GMST");
+    const TYPE: RecordType = RecordType::new(b"GMST");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

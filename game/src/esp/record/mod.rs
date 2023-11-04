@@ -69,7 +69,7 @@ pub struct RecordType([u8; 4]);
 
 impl RecordType {
     /// Create a record type from a 4 byte string
-    pub const fn from_value(&[a, b, c, d]: &[u8; 4]) -> Self {
+    pub const fn new(&[a, b, c, d]: &[u8; 4]) -> Self {
         // String comes in big endian byte order
         Self([a, b, c, d])
     }
@@ -247,7 +247,7 @@ pub enum TypedGroup<'a> {
 
 impl RawGroup<'_> {
     const HEADER_LENGTH: u32 = 24;
-    const GROUP_RECORD: RecordType = RecordType::from_value(b"GRUP");
+    const GROUP_RECORD: RecordType = RecordType::new(b"GRUP");
 
     pub fn parse(input: &[u8]) -> IResult<&[u8], RawGroup<'_>> {
         let (input, size) = le_u32(input)?;

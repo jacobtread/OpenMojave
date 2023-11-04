@@ -23,7 +23,7 @@ pub struct ENCH {
 }
 
 impl Record for ENCH {
-    const TYPE: RecordType = RecordType::from_value(b"ENCH");
+    const TYPE: RecordType = RecordType::new(b"ENCH");
 
     fn parse<'b>(
         parser: &mut crate::esp::record::RecordParser<'_, 'b>,

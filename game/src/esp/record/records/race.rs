@@ -54,7 +54,7 @@ pub struct RACE {
 }
 
 impl Record for RACE {
-    const TYPE: RecordType = RecordType::from_value(b"RACE");
+    const TYPE: RecordType = RecordType::new(b"RACE");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

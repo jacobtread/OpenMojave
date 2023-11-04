@@ -14,7 +14,7 @@ pub struct SCPT {
 }
 
 impl Record for SCPT {
-    const TYPE: RecordType = RecordType::from_value(b"SCPT");
+    const TYPE: RecordType = RecordType::new(b"SCPT");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse(EDID)?;

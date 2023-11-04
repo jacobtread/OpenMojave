@@ -34,7 +34,7 @@ pub struct LIGH {
 }
 
 impl Record for LIGH {
-    const TYPE: RecordType = RecordType::from_value(b"LIGH");
+    const TYPE: RecordType = RecordType::new(b"LIGH");
 
     fn parse<'b>(
         parser: &mut crate::esp::record::RecordParser<'_, 'b>,

@@ -26,7 +26,7 @@ pub struct TREE {
 }
 
 impl Record for TREE {
-    const TYPE: RecordType = RecordType::from_value(b"TREE");
+    const TYPE: RecordType = RecordType::new(b"TREE");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

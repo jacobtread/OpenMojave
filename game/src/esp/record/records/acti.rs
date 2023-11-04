@@ -29,7 +29,7 @@ pub struct ACTI {
 }
 
 impl Record for ACTI {
-    const TYPE: RecordType = RecordType::from_value(b"ACTI");
+    const TYPE: RecordType = RecordType::new(b"ACTI");
 
     fn parse<'b>(
         parser: &mut crate::esp::record::RecordParser<'_, 'b>,

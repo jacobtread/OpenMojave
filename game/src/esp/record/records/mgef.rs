@@ -30,7 +30,7 @@ pub struct MGEF {
 }
 
 impl Record for MGEF {
-    const TYPE: RecordType = RecordType::from_value(b"MGEF");
+    const TYPE: RecordType = RecordType::new(b"MGEF");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

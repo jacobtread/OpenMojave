@@ -54,7 +54,7 @@ pub struct ARMO {
 }
 
 impl Record for ARMO {
-    const TYPE: RecordType = RecordType::from_value(b"ARMO");
+    const TYPE: RecordType = RecordType::new(b"ARMO");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

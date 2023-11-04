@@ -46,7 +46,7 @@ impl FromRecordBytes for TXSTFlags {
 }
 
 impl Record for TXST {
-    const TYPE: RecordType = RecordType::from_value(b"TXST");
+    const TYPE: RecordType = RecordType::new(b"TXST");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

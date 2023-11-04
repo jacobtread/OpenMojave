@@ -33,7 +33,7 @@ pub struct TERM {
 }
 
 impl Record for TERM {
-    const TYPE: RecordType = RecordType::from_value(b"TERM");
+    const TYPE: RecordType = RecordType::new(b"TERM");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

@@ -19,7 +19,7 @@ pub struct HDPT {
 }
 
 impl Record for HDPT {
-    const TYPE: RecordType = RecordType::from_value(b"HDPT");
+    const TYPE: RecordType = RecordType::new(b"HDPT");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id = parser.parse::<EditorId>(EDID)?;

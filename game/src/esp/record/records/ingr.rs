@@ -36,7 +36,7 @@ pub struct INGR {
 }
 
 impl Record for INGR {
-    const TYPE: RecordType = RecordType::from_value(b"INGR");
+    const TYPE: RecordType = RecordType::new(b"INGR");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
