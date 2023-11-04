@@ -17,6 +17,7 @@ pub mod ench;
 pub mod eyes;
 pub mod fact;
 pub mod gmst;
+pub mod gras;
 pub mod hair;
 pub mod hdpt;
 pub mod ingr;
