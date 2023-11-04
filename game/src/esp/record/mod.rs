@@ -1,7 +1,7 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use bitflags::bitflags;
-use fyrox::core::algebra::Vector3;
+use fyrox::core::algebra::{Vector2, Vector3};
 use nom::bytes::complete::take;
 use nom::combinator::{all_consuming, map_res};
 use nom::multi::many0;
@@ -586,6 +586,14 @@ where
         map(tuple((T::parse, T::parse, T::parse)), |(a, b, c)| {
             Vector3::new(a, b, c)
         })(input)
+    }
+}
+impl<T> FromRecordBytes for Vector2<T>
+where
+    T: FromRecordBytes,
+{
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((T::parse, T::parse)), |(a, b)| Vector2::new(a, b))(input)
     }
 }
 

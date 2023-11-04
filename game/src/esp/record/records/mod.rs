@@ -37,4 +37,5 @@ pub mod stat;
 pub mod tact;
 pub mod term;
 pub mod tes4;
+pub mod tree;
 pub mod txst;
