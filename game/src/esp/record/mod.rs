@@ -1,10 +1,12 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use bitflags::bitflags;
+use fyrox::core::algebra::Vector3;
 use nom::bytes::complete::take;
 use nom::combinator::{all_consuming, map_res};
 use nom::multi::many0;
 use nom::number::complete::{i8, le_f32, le_i16, le_i32, le_u16, le_u32, u8};
+use nom::sequence::tuple;
 
 use super::shared::FormId;
 use crate::esp::record::records::tes4::TES4;
@@ -573,6 +575,17 @@ impl FromRecordBytes for i8 {
 impl FromRecordBytes for bool {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(u8, |value| value != 0)(input)
+    }
+}
+
+impl<T> FromRecordBytes for Vector3<T>
+where
+    T: FromRecordBytes,
+{
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((T::parse, T::parse, T::parse)), |(a, b, c)| {
+            Vector3::new(a, b, c)
+        })(input)
     }
 }
 

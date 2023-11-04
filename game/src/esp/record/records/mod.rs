@@ -18,6 +18,7 @@ pub mod mgef;
 pub mod micn;
 pub mod misc;
 pub mod race;
+pub mod scol;
 pub mod scpt;
 pub mod soun;
 pub mod spel;
