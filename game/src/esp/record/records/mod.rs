@@ -40,3 +40,4 @@ pub mod term;
 pub mod tes4;
 pub mod tree;
 pub mod txst;
+pub mod weap;

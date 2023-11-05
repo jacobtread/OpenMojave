@@ -10,6 +10,7 @@ pub mod model;
 pub mod object_bounds;
 pub mod script;
 pub mod skill;
+pub mod sound_level;
 pub mod xnam;
 
 pub const HEDR: RecordType = RecordType::new(b"HEDR");

@@ -12,6 +12,7 @@ use crate::esp::{
 pub use super::prelude::*;
 use super::scpt::SCPT;
 
+/// Furniture
 #[derive(Debug)]
 pub struct FURN {
     pub editor_id: EditorId,
