@@ -1,13 +1,5 @@
-use fyrox::core::algebra::Vector3;
-use nom::{combinator::map, number::complete::le_f32, sequence::tuple};
-
-use crate::esp::{
-    record::{
-        sub::{model::ModelData, object_bounds::ObjectBounds, DATA, EDID, OBND, ONAM},
-        FromRecordBytes, Record, RecordCollection, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, FormId},
-};
+use super::prelude::*;
+use crate::esp::record::sub::{model::ModelData, object_bounds::ObjectBounds};
 
 /// Static Collection
 #[derive(Debug)]
@@ -48,6 +40,13 @@ pub struct Part {
     pub placements: Placements,
 }
 
+#[derive(Debug)]
+pub struct Placements {
+    pub position: Vector3<f32>,
+    pub rotation: Vector3<f32>,
+    pub scale: f32,
+}
+
 impl RecordCollection for Part {
     fn parse_next<'b>(
         parser: &mut RecordParser<'_, 'b>,
@@ -61,13 +60,6 @@ impl RecordCollection for Part {
 
         Ok(Some(Self { stat, placements }))
     }
-}
-
-#[derive(Debug)]
-pub struct Placements {
-    pub position: Vector3<f32>,
-    pub rotation: Vector3<f32>,
-    pub scale: f32,
 }
 
 impl FromRecordBytes for Placements {
