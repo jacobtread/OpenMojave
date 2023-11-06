@@ -4,7 +4,7 @@ use crate::esp::{
             destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, BNAM,
             CNAM, EDID, FULL, ICON, MICO, MNAM, OBND, SCRI, SNAM,
         },
-        Collection,
+        Repeated,
     },
     shared::{EditorId, TypedFormId},
 };
@@ -35,7 +35,7 @@ impl Record for FURN {
             .ok_or_else(|| RecordParseError::Custom("FURN missing model data".to_string()))?;
         let script: Option<TypedFormId<SCPT>> = parser.try_parse(SCRI)?;
         let destruction_data: Option<DestructionData> = DestructionData::parse_next(parser)?;
-        let marker_flags: Vec<u8> = parser.parse::<Collection<u8>>(MNAM)?.into_inner();
+        let marker_flags: Vec<u8> = parser.parse::<Repeated<u8>>(MNAM)?.into_inner();
 
         Ok(Self {
             editor_id,

@@ -17,8 +17,8 @@ use crate::esp::{
             EDID, ENAM, FGGA, FGGS, FGTS, FNAM, FULL, HNAM, ICON, INDX, MICO, MNAM, NAM0, NAM1,
             NAM2, ONAM, PNAM, SNAM, UNAM, VTCK, XNAM, YNAM,
         },
-        Collection, FromRecordBytes, RawBytes, Record, RecordCollection, RecordParseError,
-        RecordParser, RecordType,
+        FromRecordBytes, RawBytes, Record, RecordCollection, RecordParseError, RecordParser,
+        RecordType, Repeated,
     },
     shared::{EditorId, FormId},
 };
@@ -123,8 +123,8 @@ impl Record for RACE {
             ));
         }
 
-        let hairs: Vec<FormId> = parser.parse::<Collection<FormId>>(HNAM)?.into_inner();
-        let eyes: Vec<FormId> = parser.parse::<Collection<FormId>>(ENAM)?.into_inner();
+        let hairs: Vec<FormId> = parser.parse::<Repeated<FormId>>(HNAM)?.into_inner();
+        let eyes: Vec<FormId> = parser.parse::<Repeated<FormId>>(ENAM)?.into_inner();
 
         // Male FaceGen Data Marker
         parser.require_type(MNAM)?;

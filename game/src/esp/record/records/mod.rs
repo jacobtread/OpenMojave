@@ -6,6 +6,7 @@ pub mod prelude {
     pub use nom::{combinator::map, number::complete::*, sequence::tuple, IResult};
 }
 
+pub mod achr;
 pub mod acti;
 pub mod armo;
 pub mod aspc;

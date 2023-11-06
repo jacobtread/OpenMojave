@@ -9,7 +9,7 @@ use crate::esp::{
             object_bounds::ObjectBounds, sound_level::SoundLevel, BNAM, CNAM, EDID, FULL, ICON,
             MICO, MNAM, OBND, SCRI, SNAM,
         },
-        Collection,
+        Repeated,
     },
     shared::{EditorId, FormId, TypedFormId},
 };

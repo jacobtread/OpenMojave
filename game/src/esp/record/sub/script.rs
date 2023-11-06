@@ -8,7 +8,9 @@ use nom::{
 };
 use num_enum::TryFromPrimitive;
 
-use crate::esp::record::{enum_value, FromRecordBytes, FullString, RawBytes, RecordCollection};
+use crate::esp::record::{
+    enum_value, take4, FromRecordBytes, FullString, RawBytes, RecordCollection,
+};
 
 use super::{SCDA, SCHR, SCRO, SCTX, SCVR, SLSD};
 
@@ -112,13 +114,14 @@ impl FromRecordBytes for SCHR {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(
             tuple((
+                take4,
                 le_u32,
                 le_u32,
                 le_u32,
                 enum_value::<SCHRType>,
                 SCHRFlags::parse,
             )),
-            |(ref_count, compiled_size, variable_count, ty, flags)| Self {
+            |(_, ref_count, compiled_size, variable_count, ty, flags)| Self {
                 ref_count,
                 compiled_size,
                 variable_count,

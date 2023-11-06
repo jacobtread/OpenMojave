@@ -5,7 +5,7 @@ use crate::esp::{
         sub::{
             model::ModelData, object_bounds::ObjectBounds, BNAM, CNAM, EDID, ICON, MICO, OBND, SNAM,
         },
-        Collection,
+        Repeated,
     },
     shared::EditorId,
 };
@@ -35,7 +35,7 @@ impl Record for TREE {
             .ok_or_else(|| RecordParseError::Custom("TREE missing model data".to_string()))?;
         let large_icon_file_name: String = parser.parse(ICON)?;
         let small_icon_file_name: String = parser.parse(MICO)?;
-        let speed_tree_seeds: Vec<u32> = parser.parse::<Collection<u32>>(SNAM)?.into_inner();
+        let speed_tree_seeds: Vec<u32> = parser.parse::<Repeated<u32>>(SNAM)?.into_inner();
         let tree_data: TreeData = parser.parse(CNAM)?;
         let billboard_size: Vector2<f32> = parser.parse(BNAM)?;
 

@@ -9,6 +9,7 @@ use nom::number::complete::{i8, le_f32, le_i16, le_i32, le_u16, le_u32, u8};
 use nom::sequence::tuple;
 
 use super::shared::FormId;
+use crate::esp::record::records::scpt::SCPT;
 use crate::esp::record::records::tes4::TES4;
 use nom::Parser;
 use nom::{
@@ -18,6 +19,8 @@ use nom::{
     IResult,
 };
 use num_enum::TryFromPrimitive;
+use std::any::type_name;
+use std::path::Path;
 use std::{
     fmt::{Debug, Display},
     iter::Peekable,
@@ -351,10 +354,10 @@ impl FullString {
     }
 }
 
-/// Collection of many repeated values from a sub-record
-pub struct Collection<T: FromRecordBytes>(pub Vec<T>);
+/// Zero or more repeated values from a sub-record
+pub struct Repeated<T: FromRecordBytes>(pub Vec<T>);
 
-impl<T> FromRecordBytes for Collection<T>
+impl<T> FromRecordBytes for Repeated<T>
 where
     T: FromRecordBytes,
 {
@@ -363,7 +366,7 @@ where
     }
 }
 
-impl<T> Collection<T>
+impl<T> Repeated<T>
 where
     T: FromRecordBytes,
 {
@@ -373,9 +376,20 @@ where
 }
 
 pub trait RecordCollection: Sized {
+    /// Attempts to parse the next item for this collection if present
     fn parse_next<'b>(
         parser: &mut RecordParser<'_, 'b>,
     ) -> Result<Option<Self>, RecordParseError<'b>>;
+
+    /// Wrapper around `parse_next` requiring that a value is returned
+    fn require_parse_next<'b>(
+        parser: &mut RecordParser<'_, 'b>,
+    ) -> Result<Self, RecordParseError<'b>> {
+        Self::parse_next(parser)?.ok_or_else(|| {
+            let msg = format!("Missing expected {} collection", type_name::<Self>());
+            RecordParseError::Custom(msg)
+        })
+    }
 }
 
 /// Iterator over sub records to make parsing easier
@@ -409,6 +423,11 @@ impl<'a, 'b> RecordParser<'a, 'b> {
         }
 
         Ok(record)
+    }
+
+    /// Gets the next record if it matches the provided type
+    pub fn try_next(&mut self, ty: RecordType) -> Option<&RawSubRecord<'b>> {
+        self.record_iter.next_if(|record| record.ty == ty)
     }
 
     /// Requires the next record type is the the provided type
@@ -612,6 +631,40 @@ fn test_parse() {
     dbg!(&header);
 
     let (_, records): (&[u8], Vec<EsmEntry>) = EsmEntry::parse_all(&input).unwrap();
+
+    let scripts = records
+        .iter()
+        .filter_map(|value| match value {
+            EsmEntry::Record(_) => None,
+            EsmEntry::Group(group) => {
+                if group.ty == GroupType::TopLevel
+                    && group.label.to_le_bytes() == RecordType::new(b"SCPT").0
+                {
+                    Some(group.data)
+                } else {
+                    None
+                }
+            }
+        })
+        .next()
+        .unwrap();
+
+    let scripts: Vec<SCPT> = EsmEntry::parse_all(scripts)
+        .unwrap()
+        .1
+        .into_iter()
+        .filter_map(|value| match value {
+            EsmEntry::Record(record) => Some(record.parse_record::<SCPT>().unwrap()),
+            EsmEntry::Group(group) => None,
+        })
+        .collect();
+
+    for script in scripts {
+        let name = script.editor_id;
+        let script = script.script;
+        let source = script.source;
+        std::fs::write(format!("../DataUnpacked/Scripts/{}.script", name.0), source).unwrap();
+    }
 
     println!("Parsed: {}", records.len());
 

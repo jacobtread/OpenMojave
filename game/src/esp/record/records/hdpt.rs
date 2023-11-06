@@ -4,7 +4,7 @@ use nom::{combinator::map, number::complete::u8, IResult};
 use crate::esp::{
     record::{
         sub::{model::ModelData, DATA, EDID, FULL, HNAM},
-        Collection, FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
+        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType, Repeated,
     },
     shared::{EditorId, FormId},
 };
@@ -27,7 +27,7 @@ impl Record for HDPT {
         // TODO: Not sure if this field is optional documentation unclear
         let model_data = ModelData::parse_first(parser)?;
         let flags = parser.parse::<Flags>(DATA)?;
-        let extra_parts = parser.parse::<Collection<FormId>>(HNAM)?.into_inner();
+        let extra_parts = parser.parse::<Repeated<FormId>>(HNAM)?.into_inner();
 
         Ok(Self {
             editor_id,

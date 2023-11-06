@@ -1,7 +1,7 @@
 use crate::esp::{
     record::{
         sub::{CNAM, DATA, DELE, HEDR, MAST, OFST, ONAM, SNAM},
-        Collection, FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
+        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType, Repeated,
     },
     shared::FormId,
 };
@@ -45,8 +45,8 @@ impl Record for TES4 {
         }
 
         let form_overrides = parser
-            .try_parse::<Collection<FormId>>(ONAM)?
-            .map(Collection::into_inner);
+            .try_parse::<Repeated<FormId>>(ONAM)?
+            .map(Repeated::into_inner);
 
         parser.skip_type(RecordType::new(b"DELE"));
 
