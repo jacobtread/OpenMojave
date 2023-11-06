@@ -1,19 +1,7 @@
-use nom::{
-    bytes::complete::take,
-    combinator::map,
-    number::complete::{le_u32, u8},
-    sequence::tuple,
-};
+use super::prelude::*;
+use crate::esp::record::sub::effect::Effect;
 
-use crate::esp::{
-    record::{
-        sub::{effect::Effect, EDID, ENIT, FULL},
-        FromRecordBytes, Record, RecordType,
-    },
-    shared::EditorId,
-};
-
-/// Object effect / Enchantment
+/// Object Effect
 #[derive(Debug)]
 pub struct ENCH {
     pub editor_id: EditorId,
@@ -25,15 +13,13 @@ pub struct ENCH {
 impl Record for ENCH {
     const TYPE: RecordType = RecordType::new(b"ENCH");
 
-    fn parse<'b>(
-        parser: &mut crate::esp::record::RecordParser<'_, 'b>,
-    ) -> Result<Self, crate::esp::record::RecordParseError<'b>> {
-        let editor_id = parser.parse::<EditorId>(EDID)?;
-        let name = parser.try_parse::<String>(FULL)?;
-        let effect_data = parser.parse::<EffectData>(ENIT)?;
-        let effects = parser.parse_collection::<Effect>()?;
+    fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
+        let editor_id: EditorId = parser.parse(EDID)?;
+        let name: Option<String> = parser.try_parse(FULL)?;
+        let effect_data: EffectData = parser.parse(ENIT)?;
+        let effects: Vec<Effect> = parser.parse_collection()?;
         if effects.is_empty() {
-            return Err(crate::esp::record::RecordParseError::Custom(
+            return Err(RecordParseError::Custom(
                 "Missing enchantment effect".to_string(),
             ));
         }

@@ -134,3 +134,4 @@ pub const XSCL: RecordType = RecordType::new(b"XSCL");
 pub const XOWN: RecordType = RecordType::new(b"XOWN");
 pub const XRNK: RecordType = RecordType::new(b"XRNK");
 pub const CARD: RecordType = RecordType::new(b"CARD");
+pub const LNAM: RecordType = RecordType::new(b"LNAM");
