@@ -1,12 +1,21 @@
 pub mod prelude {
     pub use crate::esp::{
         record::{
-            sub::*, FromRecordBytes, Record, RecordCollection, RecordParseError, RecordParser,
-            RecordType,
+            enum_value, sub::*, FromRecordBytes, Record, RecordCollection, RecordParseError,
+            RecordParser, RecordType,
         },
         shared::{EditorId, FormId, NTypedFormId, String16, String32, TypedFormId, RGBA},
     };
-    pub use nom::{combinator::map, number::complete::*, sequence::tuple, IResult};
+    pub use bitflags::bitflags;
+    pub use fyrox::core::algebra::{Vector2, Vector3};
+    pub use nom::{
+        bytes::complete::take,
+        combinator::{map, rest},
+        number::complete::*,
+        sequence::tuple,
+        IResult,
+    };
+    pub use num_enum::TryFromPrimitive;
 }
 
 pub mod achr;

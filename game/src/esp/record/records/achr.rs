@@ -1,8 +1,5 @@
 use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC, prelude::*, refr::REFR};
 use crate::esp::record::sub::script::Script;
-use bitflags::bitflags;
-use fyrox::core::algebra::Vector3;
-use nom::{bytes::complete::take, combinator::rest};
 
 /// Placed NPC
 #[derive(Debug)]

@@ -1,6 +1,5 @@
 use bitflags::bitflags;
 use nom::{
-    branch::Alt,
     combinator::map,
     multi::length_count,
     number::complete::{le_i32, le_u32, u8},

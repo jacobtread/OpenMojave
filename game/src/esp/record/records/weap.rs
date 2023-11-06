@@ -1,21 +1,8 @@
-use bitflags::bitflags;
-use fyrox::core::algebra::Vector2;
-use num_enum::TryFromPrimitive;
-
-use crate::esp::{
-    record::{
-        sub::{
-            destruction::DestructionData, equipment_type::EquipmentType, model::ModelData,
-            object_bounds::ObjectBounds, sound_level::SoundLevel, BNAM, CNAM, EDID, FULL, ICON,
-            MICO, MNAM, OBND, SCRI, SNAM,
-        },
-        Repeated,
-    },
-    shared::{EditorId, FormId, TypedFormId},
+use super::{prelude::*, scpt::SCPT, soun::SOUN, stat::STAT};
+use crate::esp::record::sub::{
+    destruction::DestructionData, equipment_type::EquipmentType, model::ModelData,
+    object_bounds::ObjectBounds, sound_level::SoundLevel,
 };
-
-pub use super::prelude::*;
-use super::{scpt::SCPT, soun::SOUN, stat::STAT};
 
 #[derive(Debug)]
 pub struct WEAP {

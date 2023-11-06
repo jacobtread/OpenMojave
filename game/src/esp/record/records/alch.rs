@@ -1,7 +1,9 @@
-use bitflags::bitflags;
-use nom::bytes::complete::take;
-
-use super::{prelude::*, scpt::SCPT, soun::SOUN, spel::SPEL, weap::equipment_type::EquipmentType};
+use super::{
+    prelude::{equipment_type::EquipmentType, *},
+    scpt::SCPT,
+    soun::SOUN,
+    spel::SPEL,
+};
 use crate::esp::record::sub::{
     destruction::DestructionData, effect::Effect, model::ModelData, object_bounds::ObjectBounds,
 };
