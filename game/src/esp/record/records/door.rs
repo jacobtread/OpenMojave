@@ -1,17 +1,9 @@
-use super::{scpt::SCPT, soun::SOUN};
-use crate::esp::{
-    record::{
-        sub::{
-            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, ANAM,
-            BNAM, EDID, FNAM, FULL, OBND, SCRI, SNAM,
-        },
-        FromRecordBytes, Record, RecordCollection, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
+use super::{prelude::*, scpt::SCPT, soun::SOUN};
+use crate::esp::record::sub::{
+    destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds,
 };
-use bitflags::bitflags;
-use nom::{combinator::map, number::complete::u8};
 
+/// Door
 #[derive(Debug)]
 pub struct DOOR {
     pub editor_id: EditorId,
