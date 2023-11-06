@@ -24,6 +24,11 @@ pub struct ModelData {
 }
 
 impl ModelData {
+    pub fn require<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
+        Self::parse_first(parser)?
+            .ok_or_else(|| RecordParseError::Custom("Missing required model data".to_string()))
+    }
+
     pub fn parse_first<'b>(
         parser: &mut RecordParser<'_, 'b>,
     ) -> Result<Option<Self>, RecordParseError<'b>> {

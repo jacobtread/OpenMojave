@@ -102,15 +102,7 @@ impl Record for ACHR {
 
 #[derive(Debug)]
 pub struct XDCR {
-    pub reference: TypedFormId<() /* REFR */>,
-}
-
-impl FromRecordBytes for XDCR {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((TypedFormId::parse, rest)), |(reference, _)| Self {
-            reference,
-        })(input)
-    }
+    pub reference: TypedFormId<REFR>,
 }
 
 #[derive(Debug)]
@@ -119,25 +111,10 @@ pub struct XCLP {
     pub end: RGBA,
 }
 
-impl FromRecordBytes for XCLP {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((RGBA::parse, RGBA::parse)), |(start, end)| Self {
-            start,
-            end,
-        })(input)
-    }
-}
-
 bitflags! {
     #[derive(Debug, Clone, Copy)]
     pub struct XAPDFlags : u8 {
-        const PARENT_ACTIVATE_ONLY   = 0x01;
-    }
-}
-
-impl FromRecordBytes for XAPDFlags {
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        map(u8, Self::from_bits_retain)(input)
+        const PARENT_ACTIVATE_ONLY = 0x01;
     }
 }
 
@@ -149,6 +126,50 @@ pub struct XAPR {
     pub delay: f32,
 }
 
+#[derive(Debug)]
+pub struct XESP {
+    /// FormID of a PLYR, REFR, ACRE, ACHR, PGRE or PMIS record.
+    pub reference: FormId,
+    pub flags: XESPFlags,
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct XESPFlags : u8 {
+        const SET_ENABLE_STATE_TO_OPPOSITE_OF_PARENT = 0x01;
+        const POP_IN                                 = 0x02;
+    }
+}
+
+#[derive(Debug)]
+pub struct PositionRotation {
+    pub position: Vector3<f32>,
+    pub rotation: Vector3<f32>,
+}
+
+impl FromRecordBytes for XDCR {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((TypedFormId::parse, rest)), |(reference, _)| Self {
+            reference,
+        })(input)
+    }
+}
+
+impl FromRecordBytes for XCLP {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((RGBA::parse, RGBA::parse)), |(start, end)| Self {
+            start,
+            end,
+        })(input)
+    }
+}
+
+impl FromRecordBytes for XAPDFlags {
+    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
+        map(u8, Self::from_bits_retain)(input)
+    }
+}
+
 impl FromRecordBytes for XAPR {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(tuple((FormId::parse, le_f32)), |(reference, delay)| Self {
@@ -156,13 +177,6 @@ impl FromRecordBytes for XAPR {
             delay,
         })(input)
     }
-}
-
-#[derive(Debug)]
-pub struct XESP {
-    /// FormID of a PLYR, REFR, ACRE, ACHR, PGRE or PMIS record.
-    pub reference: FormId,
-    pub flags: XESPFlags,
 }
 
 impl FromRecordBytes for XESP {
@@ -174,24 +188,10 @@ impl FromRecordBytes for XESP {
     }
 }
 
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct XESPFlags : u8 {
-        const SET_ENABLE_STATE_TO_OPPOSITE_OF_PARENT   = 0x01;
-        const POP_IN = 0x02;
-    }
-}
-
 impl FromRecordBytes for XESPFlags {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(u8, Self::from_bits_retain)(input)
     }
-}
-
-#[derive(Debug)]
-pub struct PositionRotation {
-    pub position: Vector3<f32>,
-    pub rotation: Vector3<f32>,
 }
 
 impl FromRecordBytes for PositionRotation {

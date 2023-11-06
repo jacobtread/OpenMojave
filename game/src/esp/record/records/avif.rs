@@ -1,5 +1,6 @@
 use super::prelude::*;
 
+/// Actor Value Information
 #[derive(Debug)]
 pub struct AVIF {
     pub editor_id: EditorId,

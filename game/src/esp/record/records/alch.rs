@@ -79,6 +79,15 @@ pub struct ENIT {
     pub sound_consume: NTypedFormId<SOUN>,
 }
 
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct ENITFlags: u8 {
+        const NO_AUTO_CALCULATION   = 0x01;
+        const FOOD_ITEM = 0x02;
+        const MEDICINE = 0x04;
+    }
+}
+
 impl FromRecordBytes for ENIT {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(
@@ -98,15 +107,6 @@ impl FromRecordBytes for ENIT {
                 sound_consume,
             },
         )(input)
-    }
-}
-
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct ENITFlags: u8 {
-        const NO_AUTO_CALCULATION   = 0x01;
-        const FOOD_ITEM = 0x02;
-        const MEDICINE = 0x04;
     }
 }
 

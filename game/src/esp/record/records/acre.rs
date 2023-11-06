@@ -1,4 +1,12 @@
-use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC, prelude::*, refr::REFR};
+use super::{
+    achr::{PositionRotation, XAPDFlags, XAPR, XCLP, XDCR, XESP},
+    dial::DIAL,
+    eczn::ECZN,
+    idle::IDLE,
+    npc::NPC,
+    prelude::*,
+    refr::REFR,
+};
 use crate::esp::record::sub::script::Script;
 
 /// Placed Creature
@@ -105,109 +113,5 @@ impl Record for ACHR {
             scale,
             position_rotation,
         })
-    }
-}
-
-#[derive(Debug)]
-pub struct XDCR {
-    pub reference: TypedFormId<() /* REFR */>,
-}
-
-impl FromRecordBytes for XDCR {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((TypedFormId::parse, rest)), |(reference, _)| Self {
-            reference,
-        })(input)
-    }
-}
-
-#[derive(Debug)]
-pub struct XCLP {
-    pub start: RGBA,
-    pub end: RGBA,
-}
-
-impl FromRecordBytes for XCLP {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((RGBA::parse, RGBA::parse)), |(start, end)| Self {
-            start,
-            end,
-        })(input)
-    }
-}
-
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct XAPDFlags : u8 {
-        const PARENT_ACTIVATE_ONLY   = 0x01;
-
-    }
-}
-
-impl FromRecordBytes for XAPDFlags {
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        map(u8, Self::from_bits_retain)(input)
-    }
-}
-
-/// Activate Parent Ref
-#[derive(Debug)]
-pub struct XAPR {
-    /// FormID of a REFR, ACRE, ACHR, PGRE or PMIS record.
-    pub reference: FormId,
-    pub delay: f32,
-}
-
-impl FromRecordBytes for XAPR {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((FormId::parse, le_f32)), |(reference, delay)| Self {
-            reference,
-            delay,
-        })(input)
-    }
-}
-
-#[derive(Debug)]
-pub struct XESP {
-    /// FormID of a PLYR, REFR, ACRE, ACHR, PGRE or PMIS record.
-    pub reference: FormId,
-    pub flags: XESPFlags,
-}
-
-impl FromRecordBytes for XESP {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((FormId::parse, XESPFlags::parse, take(3usize))),
-            |(reference, flags, _)| Self { reference, flags },
-        )(input)
-    }
-}
-
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct XESPFlags : u8 {
-        const SET_ENABLE_STATE_TO_OPPOSITE_OF_PARENT   = 0x01;
-        const POP_IN = 0x02;
-    }
-}
-
-impl FromRecordBytes for XESPFlags {
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        map(u8, Self::from_bits_retain)(input)
-    }
-}
-
-#[derive(Debug)]
-pub struct PositionRotation {
-    pub position: Vector3<f32>,
-    pub rotation: Vector3<f32>,
-}
-
-impl FromRecordBytes for PositionRotation {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((Vector3::parse, Vector3::parse)),
-            |(position, rotation)| Self { position, rotation },
-        )(input)
     }
 }

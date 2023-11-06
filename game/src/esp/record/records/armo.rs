@@ -1,27 +1,7 @@
-use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    combinator::{map, rest},
-    number::complete::{le_f32, le_i16, le_i32, le_u16, le_u32, u8},
-    sequence::tuple,
-    IResult,
+use super::{flst::FLST, prelude::*, scpt::SCPT, soun::SOUN};
+use crate::esp::record::sub::{
+    equipment_type::EquipmentType, model::ModelData, object_bounds::ObjectBounds,
 };
-use num_enum::TryFromPrimitive;
-
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{
-            equipment_type::EquipmentType, model::ModelData, object_bounds::ObjectBounds, BIPL,
-            BMCT, BMDT, BNAM, DATA, DNAM, EDID, EITM, ETYP, FULL, ICO2, ICON, MIC2, MICO, OBND,
-            REPL, SCRI, SNAM, TNAM, YNAM, ZNAM,
-        },
-        take4, FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, FormId, TypedFormId},
-};
-
-use super::{scpt::SCPT, soun::SOUN};
 
 /// Armor
 #[derive(Debug)]
@@ -41,8 +21,8 @@ pub struct ARMO {
     pub female_inventory_icon_file_name: Option<String>,
     pub female_message_icon_file_name: Option<String>,
     pub ragdoll_constraint_template: Option<String>,
-    pub repair_list: Option<TypedFormId<() /* FLST */>>,
-    pub biped_model_list: Option<TypedFormId<() /* FLST */>>,
+    pub repair_list: Option<TypedFormId<FLST>>,
+    pub biped_model_list: Option<TypedFormId<FLST>>,
     pub equipment_type: EquipmentType,
     pub sound_pickup: Option<TypedFormId<SOUN>>,
     pub sound_drop: Option<TypedFormId<SOUN>>,
@@ -81,8 +61,8 @@ impl Record for ARMO {
         let female_message_icon_file_name: Option<String> = parser.try_parse(MIC2)?;
 
         let ragdoll_constraint_template: Option<String> = parser.try_parse(BMCT)?;
-        let repair_list: Option<TypedFormId<()>> = parser.try_parse(REPL)?;
-        let biped_model_list: Option<TypedFormId<()>> = parser.try_parse(BIPL)?;
+        let repair_list: Option<TypedFormId<FLST>> = parser.try_parse(REPL)?;
+        let biped_model_list: Option<TypedFormId<FLST>> = parser.try_parse(BIPL)?;
         let equipment_type: EquipmentType = parser.parse(ETYP)?;
         let sound_pickup: Option<TypedFormId<SOUN>> = parser.try_parse(YNAM)?;
         let sound_drop: Option<TypedFormId<SOUN>> = parser.try_parse(ZNAM)?;
@@ -129,39 +109,12 @@ pub struct ArmorData {
     pub weight: f32,
 }
 
-impl FromRecordBytes for ArmorData {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((le_i32, le_i32, le_f32)),
-            |(value, max_condition, weight)| Self {
-                value,
-                max_condition,
-                weight,
-            },
-        )(input)
-    }
-}
-
 #[derive(Debug)]
 pub struct DNAM {
     pub ar: i16,
     pub flags: DNAMFlags,
     pub dt: f32,
     pub unknown: [u8; 4],
-}
-
-impl FromRecordBytes for DNAM {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((le_i16, DNAMFlags::parse, le_f32, take4)),
-            |(ar, flags, dt, unknown)| Self {
-                ar,
-                flags,
-                dt,
-                unknown,
-            },
-        )(input)
-    }
 }
 
 bitflags! {
@@ -171,26 +124,11 @@ bitflags! {
     }
 }
 
-impl FromRecordBytes for DNAMFlags {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(le_u16, Self::from_bits_retain)(input)
-    }
-}
-
 #[derive(Debug)]
 pub struct SNAM {
     pub sound: TypedFormId<SOUN>,
     pub chance: u8,
     pub ty: SNAMType,
-}
-
-impl FromRecordBytes for SNAM {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((TypedFormId::parse, u8, take(3usize), enum_value::<SNAMType>)),
-            |(sound, chance, _, ty)| Self { sound, chance, ty },
-        )(input)
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
@@ -208,18 +146,6 @@ pub enum SNAMType {
 pub struct BMDT {
     pub biped_flags: BipedFlags,
     pub general_flags: GeneralFlags,
-}
-
-impl FromRecordBytes for BMDT {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((BipedFlags::parse, GeneralFlags::parse, rest)),
-            |(biped_flags, general_flags, _)| Self {
-                biped_flags,
-                general_flags,
-            },
-        )(input)
-    }
 }
 
 bitflags! {
@@ -248,11 +174,6 @@ bitflags! {
     }
 }
 
-impl FromRecordBytes for BipedFlags {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(le_u32, Self::from_bits_retain)(input)
-    }
-}
 bitflags! {
     #[derive(Debug, Clone)]
     pub struct GeneralFlags: u8 {
@@ -264,6 +185,66 @@ bitflags! {
         const POWER_ARMOR = 0x20;
         const NON_PLAYABLE = 0x40;
         const HEAVY = 0x80;
+    }
+}
+
+impl FromRecordBytes for ArmorData {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((le_i32, le_i32, le_f32)),
+            |(value, max_condition, weight)| Self {
+                value,
+                max_condition,
+                weight,
+            },
+        )(input)
+    }
+}
+
+impl FromRecordBytes for DNAM {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((le_i16, DNAMFlags::parse, le_f32, take4)),
+            |(ar, flags, dt, unknown)| Self {
+                ar,
+                flags,
+                dt,
+                unknown,
+            },
+        )(input)
+    }
+}
+
+impl FromRecordBytes for DNAMFlags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u16, Self::from_bits_retain)(input)
+    }
+}
+
+impl FromRecordBytes for SNAM {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((TypedFormId::parse, u8, take(3usize), enum_value::<SNAMType>)),
+            |(sound, chance, _, ty)| Self { sound, chance, ty },
+        )(input)
+    }
+}
+
+impl FromRecordBytes for BMDT {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((BipedFlags::parse, GeneralFlags::parse, rest)),
+            |(biped_flags, general_flags, _)| Self {
+                biped_flags,
+                general_flags,
+            },
+        )(input)
+    }
+}
+
+impl FromRecordBytes for BipedFlags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u32, Self::from_bits_retain)(input)
     }
 }
 
