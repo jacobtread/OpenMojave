@@ -7,6 +7,7 @@ pub mod prelude {
 }
 
 pub mod achr;
+pub mod acre;
 pub mod acti;
 pub mod armo;
 pub mod aspc;

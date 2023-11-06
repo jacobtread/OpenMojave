@@ -6,7 +6,8 @@ pub use super::prelude::*;
 use crate::esp::{
     record::sub::{
         script::Script, DATA, EDID, INAM, NAME, TNAM, XADP, XAPR, XATO, XCLP, XCNT, XDCR, XEMI,
-        XESP, XEZN, XHLP, XIBS, XLCM, XLKR, XMBR, XMRC, XPPA, XPRD, XRDS, XRGB, XRGD, XSCL,
+        XESP, XEZN, XHLP, XIBS, XLCM, XLKR, XMBR, XMRC, XOWN, XPPA, XPRD, XRDS, XRGB, XRGD, XRNK,
+        XSCL,
     },
     shared::{EditorId, FormId, TypedFormId, RGBA},
 };
@@ -22,6 +23,9 @@ pub struct ACHR {
     pub embedded_script: Script,
     pub topic: TypedFormId<() /* DIAL or null */>,
     pub level_modifier: Option<i32>,
+    /// Ownership data. FormID of a FACT, ACHR, CREA or NPC_ record.
+    pub owner: Option<FormId>,
+    pub faction_rank: Option<i32>,
     pub merchant_container: Option<TypedFormId<() /* REFR */>>,
     pub count: Option<i32>,
     pub radius: Option<f32>,
@@ -64,6 +68,8 @@ impl Record for ACHR {
         let embedded_script: Script = Script::require_parse_next(parser)?;
         let topic: TypedFormId<()> = parser.parse(TNAM)?;
         let level_modifier: Option<i32> = parser.try_parse(XLCM)?;
+        let owner: Option<FormId> = parser.try_parse(XOWN)?;
+        let faction_rank: Option<i32> = parser.try_parse(XRNK)?;
         let merchant_container: Option<TypedFormId<()>> = parser.try_parse(XMRC)?;
         let count: Option<i32> = parser.try_parse(XCNT)?;
         let radius: Option<f32> = parser.try_parse(XRDS)?;
@@ -85,11 +91,14 @@ impl Record for ACHR {
             editor_id,
             base,
             encounter_zone,
+
             idle_time,
             idle,
             embedded_script,
             topic,
             level_modifier,
+            owner,
+            faction_rank,
             merchant_container,
             count,
             radius,

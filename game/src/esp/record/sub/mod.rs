@@ -131,3 +131,5 @@ pub const XEMI: RecordType = RecordType::new(b"XEMI");
 pub const XMBR: RecordType = RecordType::new(b"XMBR");
 pub const XIBS: RecordType = RecordType::new(b"XIBS");
 pub const XSCL: RecordType = RecordType::new(b"XSCL");
+pub const XOWN: RecordType = RecordType::new(b"XOWN");
+pub const XRNK: RecordType = RecordType::new(b"XRNK");
