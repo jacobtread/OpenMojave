@@ -7,7 +7,7 @@ pub struct AVIF {
     pub description: String,
     pub large_icon_file_name: Option<String>,
     pub small_icon_file_name: Option<String>,
-    pub short_name: String,
+    pub short_name: Option<String>,
 }
 
 impl Record for AVIF {
