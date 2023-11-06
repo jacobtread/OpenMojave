@@ -1,23 +1,7 @@
-use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    character::complete::u8,
-    combinator::map,
-    number::complete::{le_f32, le_u16},
-    sequence::tuple,
-    IResult,
-};
+use super::prelude::*;
+use crate::esp::record::sub::object_bounds::ObjectBounds;
 
-use crate::esp::{
-    record::{
-        sub::{
-            object_bounds::ObjectBounds, DNAM, DODT, EDID, OBND, TX00, TX01, TX02, TX03, TX04, TX05,
-        },
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, RGBA},
-};
-
+/// Texture Set
 #[derive(Debug)]
 pub struct TXST {
     pub editor_id: EditorId,
@@ -49,16 +33,16 @@ impl Record for TXST {
     const TYPE: RecordType = RecordType::new(b"TXST");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
-        let editor_id = parser.parse::<EditorId>(EDID)?;
-        let object_bounds = parser.parse::<ObjectBounds>(OBND)?;
-        let tx00 = parser.try_parse::<String>(TX00)?;
-        let tx01 = parser.try_parse::<String>(TX01)?;
-        let tx02 = parser.try_parse::<String>(TX02)?;
-        let tx03 = parser.try_parse::<String>(TX03)?;
-        let tx04 = parser.try_parse::<String>(TX04)?;
-        let tx05 = parser.try_parse::<String>(TX05)?;
-        let decal_data = parser.try_parse::<DODT>(DODT)?;
-        let flags = parser.parse::<TXSTFlags>(DNAM)?;
+        let editor_id: EditorId = parser.parse(EDID)?;
+        let object_bounds: ObjectBounds = parser.parse(OBND)?;
+        let tx00: Option<String> = parser.try_parse(TX00)?;
+        let tx01: Option<String> = parser.try_parse(TX01)?;
+        let tx02: Option<String> = parser.try_parse(TX02)?;
+        let tx03: Option<String> = parser.try_parse(TX03)?;
+        let tx04: Option<String> = parser.try_parse(TX04)?;
+        let tx05: Option<String> = parser.try_parse(TX05)?;
+        let decal_data: Option<DODT> = parser.try_parse(DODT)?;
+        let flags: TXSTFlags = parser.parse(DNAM)?;
 
         Ok(Self {
             editor_id,
@@ -98,9 +82,9 @@ bitflags! {
     }
 }
 
-impl DODTFlags {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(u8, DODTFlags::from_bits_retain)(input)
+impl FromRecordBytes for DODTFlags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(u8, Self::from_bits_retain)(input)
     }
 }
 

@@ -1,16 +1,7 @@
-use num_enum::TryFromPrimitive;
+use super::{prelude::*, soun::SOUN};
+use crate::esp::record::sub::{model::ModelData, object_bounds::ObjectBounds};
 
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{model::ModelData, object_bounds::ObjectBounds, BRUS, EDID, OBND, RNAM},
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
-};
-
-use super::soun::SOUN;
-
+/// Static
 #[derive(Debug)]
 pub struct STAT {
     pub editor_id: EditorId,

@@ -1,16 +1,4 @@
-use crate::esp::{
-    record::{
-        sub::{CNAM, DATA, DELE, HEDR, MAST, OFST, ONAM, SNAM},
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType, Repeated,
-    },
-    shared::FormId,
-};
-use nom::{
-    combinator::map,
-    number::complete::{le_f32, le_u32},
-    sequence::tuple,
-    IResult,
-};
+use super::prelude::*;
 
 /// Plugin Info
 #[derive(Debug)]
@@ -27,13 +15,13 @@ impl Record for TES4 {
     const TYPE: RecordType = RecordType::new(b"TES4");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
-        let hedr = parser.parse::<HEDR>(HEDR)?;
+        let hedr: HEDR = parser.parse(HEDR)?;
 
         parser.skip_type(OFST);
         parser.skip_type(DELE);
 
-        let author: String = parser.parse::<String>(CNAM)?;
-        let description = parser.try_parse::<String>(SNAM)?;
+        let author: String = parser.parse(CNAM)?;
+        let description: Option<String> = parser.try_parse(SNAM)?;
 
         let mut masters: Vec<String> = Vec::new();
 
@@ -48,7 +36,7 @@ impl Record for TES4 {
             .try_parse::<Repeated<FormId>>(ONAM)?
             .map(Repeated::into_inner);
 
-        parser.skip_type(RecordType::new(b"DELE"));
+        parser.skip_type(DELE);
 
         Ok(Self {
             hedr,

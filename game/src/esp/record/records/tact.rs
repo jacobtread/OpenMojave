@@ -1,15 +1,7 @@
-use crate::esp::{
-    record::{
-        sub::{
-            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, EDID,
-            FULL, INAM, OBND, SCRI, SNAM, VNAM,
-        },
-        Record, RecordCollection, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
+use super::{prelude::*, scpt::SCPT, soun::SOUN, vtyp::VTYP};
+use crate::esp::record::sub::{
+    destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds,
 };
-
-use super::{scpt::SCPT, soun::SOUN};
 
 /// Talking Activator
 #[derive(Debug)]
@@ -21,7 +13,7 @@ pub struct TACT {
     pub script: Option<TypedFormId<SCPT>>,
     pub destruction_data: Option<DestructionData>,
     pub sound_looping: Option<TypedFormId<SOUN>>,
-    pub voice_type: Option<TypedFormId<() /* VTYP */>>,
+    pub voice_type: Option<TypedFormId<VTYP>>,
     pub radio_template: Option<TypedFormId<SOUN>>,
 }
 
@@ -37,7 +29,7 @@ impl Record for TACT {
         let script: Option<TypedFormId<SCPT>> = parser.try_parse(SCRI)?;
         let destruction_data: Option<DestructionData> = DestructionData::parse_next(parser)?;
         let sound_looping: Option<TypedFormId<SOUN>> = parser.try_parse(SNAM)?;
-        let voice_type: Option<TypedFormId<()>> = parser.try_parse(VNAM)?;
+        let voice_type: Option<TypedFormId<VTYP>> = parser.try_parse(VNAM)?;
         let radio_template: Option<TypedFormId<SOUN>> = parser.try_parse(INAM)?;
 
         Ok(Self {

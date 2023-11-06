@@ -1,17 +1,7 @@
-use fyrox::core::algebra::Vector2;
-
-use crate::esp::{
-    record::{
-        sub::{
-            model::ModelData, object_bounds::ObjectBounds, BNAM, CNAM, EDID, ICON, MICO, OBND, SNAM,
-        },
-        Repeated,
-    },
-    shared::EditorId,
-};
-
 pub use super::prelude::*;
+use crate::esp::record::sub::{model::ModelData, object_bounds::ObjectBounds};
 
+/// Tree
 #[derive(Debug)]
 pub struct TREE {
     pub editor_id: EditorId,
@@ -31,8 +21,7 @@ impl Record for TREE {
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
         let object_bounds: ObjectBounds = parser.parse(OBND)?;
-        let model_data: ModelData = ModelData::parse_first(parser)?
-            .ok_or_else(|| RecordParseError::Custom("TREE missing model data".to_string()))?;
+        let model_data: ModelData = ModelData::require(parser)?;
         let large_icon_file_name: String = parser.parse(ICON)?;
         let small_icon_file_name: String = parser.parse(MICO)?;
         let speed_tree_seeds: Vec<u32> = parser.parse::<Repeated<u32>>(SNAM)?.into_inner();

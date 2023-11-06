@@ -1,21 +1,5 @@
-use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    combinator::map,
-    number::complete::{le_u32, u8},
-    sequence::tuple,
-    IResult,
-};
-use num_enum::TryFromPrimitive;
-
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{effect::Effect, EDID, FULL, SPIT},
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::EditorId,
-};
+use super::prelude::*;
+use crate::esp::record::sub::effect::Effect;
 
 /// Actor Effect / Spell
 #[derive(Debug)]
@@ -55,21 +39,6 @@ pub struct SPIT {
     pub flags: SPITFlags,
 }
 
-impl FromRecordBytes for SPIT {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((
-                enum_value::<SPITType>,
-                le_u32,
-                le_u32,
-                SPITFlags::parse,
-                take(3usize),
-            )),
-            |(ty, _cost, _level, flags, _unused)| Self { ty, flags },
-        )(input)
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
 #[repr(u32)]
 pub enum SPITType {
@@ -89,14 +58,29 @@ pub enum SPITType {
 bitflags! {
     #[derive(Debug, Clone, Copy)]
     pub struct SPITFlags: u8 {
-        const NO_AUTO_CALC = 0x01;
-        const IMMUNE_TO_SILENCE_1 = 0x02;
-        const PC_START_EFFECT = 0x04;
-        const IMMUNE_TO_SILENCE_2 = 0x08;
-        const AREA_EFFECT_IGNORES_LOS = 0x10;
+        const NO_AUTO_CALC                 = 0x01;
+        const IMMUNE_TO_SILENCE_1          = 0x02;
+        const PC_START_EFFECT              = 0x04;
+        const IMMUNE_TO_SILENCE_2          = 0x08;
+        const AREA_EFFECT_IGNORES_LOS      = 0x10;
         const SCRIPT_EFFECT_ALWAYS_APPLIES = 0x20;
-        const DISABLE_ABSORB = 0x40;
-        const FORCE_TOUCH_EXPLODE = 0x80;
+        const DISABLE_ABSORB               = 0x40;
+        const FORCE_TOUCH_EXPLODE          = 0x80;
+    }
+}
+
+impl FromRecordBytes for SPIT {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((
+                enum_value::<SPITType>,
+                le_u32,
+                le_u32,
+                SPITFlags::parse,
+                take(3usize),
+            )),
+            |(ty, _cost, _level, flags, _unused)| Self { ty, flags },
+        )(input)
     }
 }
 
