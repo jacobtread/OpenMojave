@@ -2,7 +2,7 @@ pub mod prelude {
     pub use crate::esp::{
         record::{
             enum_value, sub::*, take4, FromRecordBytes, Record, RecordCollection, RecordParseError,
-            RecordParser, RecordType,
+            RecordParser, RecordType, Repeated,
         },
         shared::{EditorId, FormId, NTypedFormId, String16, String32, TypedFormId, RGBA},
     };

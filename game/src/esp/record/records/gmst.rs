@@ -1,10 +1,4 @@
-use crate::esp::{
-    record::{
-        sub::{DATA, EDID},
-        Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::EditorId,
-};
+use super::prelude::*;
 
 /// Game setting
 #[derive(Debug)]
@@ -31,10 +25,10 @@ impl Record for GMST {
             .ok_or_else(|| RecordParseError::Custom("Game setting editor ID was empty".into()))?;
 
         let value = match first_char {
-            's' => parser.parse::<String>(DATA).map(GMSTValue::String)?,
-            'f' => parser.parse::<f32>(DATA).map(GMSTValue::Float)?,
+            's' => parser.parse(DATA).map(GMSTValue::String)?,
+            'f' => parser.parse(DATA).map(GMSTValue::Float)?,
             // Default parsing as int
-            _ => parser.parse::<i32>(DATA).map(GMSTValue::Int)?,
+            _ => parser.parse(DATA).map(GMSTValue::Int)?,
         };
 
         Ok(Self { editor_id, value })

@@ -1,16 +1,7 @@
-use crate::esp::{
-    record::{
-        sub::{
-            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, BNAM,
-            CNAM, EDID, FULL, ICON, MICO, MNAM, OBND, SCRI, SNAM,
-        },
-        Repeated,
-    },
-    shared::{EditorId, TypedFormId},
+use super::{prelude::*, scpt::SCPT};
+use crate::esp::record::sub::{
+    destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds,
 };
-
-pub use super::prelude::*;
-use super::scpt::SCPT;
 
 /// Furniture
 #[derive(Debug)]
