@@ -12,7 +12,7 @@ use crate::esp::{
     shared::{EditorId, FormId, TypedFormId, RGBA},
 };
 
-/// Placed NPC
+/// Placed Creature
 #[derive(Debug)]
 pub struct ACHR {
     pub editor_id: EditorId,
