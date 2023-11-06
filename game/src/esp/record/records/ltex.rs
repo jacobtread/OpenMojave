@@ -1,16 +1,4 @@
-use nom::{combinator::map, number::complete::u8, sequence::tuple};
-use num_enum::TryFromPrimitive;
-
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{EDID, GNAM, HNAM, ICON, MICO, SNAM, TNAM},
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
-};
-
-use super::txst::TXST;
+use super::{gras::GRAS, prelude::*, txst::TXST};
 
 /// Landscape texture
 #[derive(Debug)]
@@ -21,20 +9,21 @@ pub struct LTEX {
     pub texture: TypedFormId<TXST>,
     pub havok_data: HavokData,
     pub texture_specular_exponent: u8,
-    pub grass: Vec<TypedFormId<() /* GRAS */>>,
+    pub grass: Vec<TypedFormId<GRAS>>,
 }
 
 impl Record for LTEX {
     const TYPE: RecordType = RecordType::new(b"LTEX");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
-        let editor_id = parser.parse::<EditorId>(EDID)?;
-        let large_icon_file_name = parser.parse::<String>(ICON)?;
-        let small_icon_file_name = parser.parse::<String>(MICO)?;
-        let texture = parser.parse::<TypedFormId<TXST>>(TNAM)?;
-        let havok_data = parser.parse::<HavokData>(HNAM)?;
-        let texture_specular_exponent = parser.parse::<u8>(SNAM)?;
-        let grass = parser.try_parse_many(GNAM)?;
+        let editor_id: EditorId = parser.parse(EDID)?;
+        let large_icon_file_name: String = parser.parse(ICON)?;
+        let small_icon_file_name: String = parser.parse(MICO)?;
+        let texture: TypedFormId<TXST> = parser.parse(TNAM)?;
+        let havok_data: HavokData = parser.parse(HNAM)?;
+        let texture_specular_exponent: u8 = parser.parse::<u8>(SNAM)?;
+        let grass: Vec<TypedFormId<GRAS>> = parser.try_parse_many(GNAM)?;
+
         Ok(Self {
             editor_id,
             large_icon_file_name,
@@ -52,19 +41,6 @@ pub struct HavokData {
     pub ty: MaterialType,
     pub friction: u8,
     pub restitution: u8,
-}
-
-impl FromRecordBytes for HavokData {
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        map(
-            tuple((enum_value::<MaterialType>, u8, u8)),
-            |(ty, friction, restitution)| Self {
-                ty,
-                friction,
-                restitution,
-            },
-        )(input)
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
@@ -102,4 +78,17 @@ pub enum MaterialType {
     Lunchbox = 29,
     BabyRattle = 30,
     RubberBall = 31,
+}
+
+impl FromRecordBytes for HavokData {
+    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
+        map(
+            tuple((enum_value::<MaterialType>, u8, u8)),
+            |(ty, friction, restitution)| Self {
+                ty,
+                friction,
+                restitution,
+            },
+        )(input)
+    }
 }
