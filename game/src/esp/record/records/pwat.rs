@@ -1,11 +1,7 @@
-use bitflags::bitflags;
+use super::prelude::*;
+use crate::esp::record::sub::{model::ModelData, object_bounds::ObjectBounds};
 
-use crate::esp::{
-    record::records::prelude::*,
-    record::sub::{model::ModelData, object_bounds::ObjectBounds, DNAM, EDID, OBND},
-    shared::{EditorId, TypedFormId},
-};
-
+/// Placeable Water
 #[derive(Debug)]
 pub struct PWAT {
     pub editor_id: EditorId,
@@ -20,8 +16,7 @@ impl Record for PWAT {
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
         let object_bounds: ObjectBounds = parser.parse(OBND)?;
-        let model_data: ModelData = ModelData::parse_first(parser)?
-            .ok_or_else(|| RecordParseError::Custom("PWAT missing model data".to_string()))?;
+        let model_data: ModelData = ModelData::require(parser)?;
         let dnam: DNAM = parser.parse(DNAM)?;
 
         Ok(Self {

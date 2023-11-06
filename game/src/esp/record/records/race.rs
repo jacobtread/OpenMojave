@@ -1,28 +1,10 @@
-use bitflags::bitflags;
-use fyrox::resource::model::Model;
-use nom::{
-    combinator::map,
-    number::complete::{i8, le_f32, le_u32, u8},
-    sequence::tuple,
-    IResult,
-};
-use num_enum::TryFromPrimitive;
-use serde_ini::parse;
-
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{
-            actor_values::ActorValue, model::ModelData, xnam::XNAM, ATTR, CNAM, DATA, DESC, DNAM,
-            EDID, ENAM, FGGA, FGGS, FGTS, FNAM, FULL, HNAM, ICON, INDX, MICO, MNAM, NAM0, NAM1,
-            NAM2, ONAM, PNAM, SNAM, UNAM, VTCK, XNAM, YNAM,
-        },
-        FromRecordBytes, RawBytes, Record, RecordCollection, RecordParseError, RecordParser,
-        RecordType, Repeated,
-    },
-    shared::{EditorId, FormId},
+use super::prelude::*;
+use crate::esp::record::{
+    sub::{actor_values::ActorValue, model::ModelData, xnam::XNAM},
+    RawBytes,
 };
 
+/// Race
 #[derive(Debug)]
 pub struct RACE {
     pub editor_id: EditorId,
@@ -183,44 +165,16 @@ pub struct Voices {
     pub female: FormId,
 }
 
-impl FromRecordBytes for Voices {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((FormId::parse, FormId::parse)), |(male, female)| {
-            Self { male, female }
-        })(input)
-    }
-}
-
 #[derive(Debug)]
 pub struct DefaultHairStyles {
     pub male: FormId,
     pub female: FormId,
 }
 
-impl FromRecordBytes for DefaultHairStyles {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((FormId::parse, FormId::parse)), |(male, female)| {
-            Self { male, female }
-        })(input)
-    }
-}
-
 #[derive(Debug)]
 pub struct DefaultHairColors {
     pub male: DefaultHairColor,
     pub female: DefaultHairColor,
-}
-
-impl FromRecordBytes for DefaultHairColors {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((
-                enum_value::<DefaultHairColor>,
-                enum_value::<DefaultHairColor>,
-            )),
-            |(male, female)| Self { male, female },
-        )(input)
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
@@ -260,66 +214,10 @@ pub struct RaceData {
     pub flags: RaceDataFlags,
 }
 
-impl FromRecordBytes for RaceData {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(
-            tuple((
-                SkillBoost::parse,
-                SkillBoost::parse,
-                SkillBoost::parse,
-                SkillBoost::parse,
-                SkillBoost::parse,
-                SkillBoost::parse,
-                SkillBoost::parse,
-                le_f32,
-                le_f32,
-                le_f32,
-                le_f32,
-                RaceDataFlags::parse,
-            )),
-            |(
-                sb_1,
-                sb_2,
-                sb_3,
-                sb_4,
-                sb_5,
-                sb_6,
-                sb_7,
-                male_height,
-                female_height,
-                male_weight,
-                female_weight,
-                flags,
-            )| Self {
-                sb_1,
-                sb_2,
-                sb_3,
-                sb_4,
-                sb_5,
-                sb_6,
-                sb_7,
-                male_height,
-                female_height,
-                male_weight,
-                female_weight,
-                flags,
-            },
-        )(input)
-    }
-}
-
 #[derive(Debug)]
 pub struct SkillBoost {
     pub skill: ActorValue,
     pub boost: i8,
-}
-
-impl FromRecordBytes for SkillBoost {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(tuple((enum_value::<ActorValue>, i8)), |(skill, boost)| {
-            Self { skill, boost }
-        })(input)
-    }
 }
 
 bitflags! {
@@ -331,50 +229,12 @@ bitflags! {
     }
 }
 
-impl FromRecordBytes for RaceDataFlags {
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(le_u32, Self::from_bits_retain)(input)
-    }
-}
-
 #[derive(Debug)]
 pub struct HeadPart {
     pub index: Option<HeadPartIndex>,
     pub model_data: ModelData,
     pub large_icon_file_name: Option<String>,
     pub small_icon_file_name: Option<String>,
-}
-
-impl RecordCollection for HeadPart {
-    fn parse_next<'b>(
-        parser: &mut RecordParser<'_, 'b>,
-    ) -> Result<Option<Self>, RecordParseError<'b>> {
-        let index = parser.try_parse::<HeadPartIndex>(INDX)?;
-        let model_data = ModelData::parse_first(parser)?;
-
-        let (index, model_data) = match (index, model_data) {
-            // There was nothing so the collection is finished
-            (None, None) => return Ok(None),
-            // Model is present
-            (index, Some(model_data)) => (index, model_data),
-            // Index was present but model was missing
-            (Some(_), None) => {
-                return Err(RecordParseError::Custom(
-                    "Hair missing model data".to_string(),
-                ))
-            }
-        };
-
-        let large_icon_file_name = parser.try_parse::<String>(ICON)?;
-        let small_icon_file_name = parser.try_parse::<String>(MICO)?;
-
-        Ok(Some(Self {
-            index,
-            model_data,
-            large_icon_file_name,
-            small_icon_file_name,
-        }))
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
@@ -388,13 +248,6 @@ pub enum HeadPartIndex {
     Tounge = 5,
     LeftEye = 6,
     RightEye = 7,
-}
-
-impl FromRecordBytes for HeadPartIndex {
-    #[inline]
-    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        enum_value(input)
-    }
 }
 
 #[derive(Debug)]
@@ -448,6 +301,134 @@ pub enum BodyPartIndex {
 }
 
 impl FromRecordBytes for BodyPartIndex {
+    #[inline]
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        enum_value(input)
+    }
+}
+
+impl FromRecordBytes for Voices {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((FormId::parse, FormId::parse)), |(male, female)| {
+            Self { male, female }
+        })(input)
+    }
+}
+
+impl FromRecordBytes for DefaultHairStyles {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((FormId::parse, FormId::parse)), |(male, female)| {
+            Self { male, female }
+        })(input)
+    }
+}
+impl FromRecordBytes for DefaultHairColors {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((
+                enum_value::<DefaultHairColor>,
+                enum_value::<DefaultHairColor>,
+            )),
+            |(male, female)| Self { male, female },
+        )(input)
+    }
+}
+
+impl FromRecordBytes for RaceData {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(
+            tuple((
+                SkillBoost::parse,
+                SkillBoost::parse,
+                SkillBoost::parse,
+                SkillBoost::parse,
+                SkillBoost::parse,
+                SkillBoost::parse,
+                SkillBoost::parse,
+                le_f32,
+                le_f32,
+                le_f32,
+                le_f32,
+                RaceDataFlags::parse,
+            )),
+            |(
+                sb_1,
+                sb_2,
+                sb_3,
+                sb_4,
+                sb_5,
+                sb_6,
+                sb_7,
+                male_height,
+                female_height,
+                male_weight,
+                female_weight,
+                flags,
+            )| Self {
+                sb_1,
+                sb_2,
+                sb_3,
+                sb_4,
+                sb_5,
+                sb_6,
+                sb_7,
+                male_height,
+                female_height,
+                male_weight,
+                female_weight,
+                flags,
+            },
+        )(input)
+    }
+}
+
+impl FromRecordBytes for SkillBoost {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(tuple((enum_value::<ActorValue>, i8)), |(skill, boost)| {
+            Self { skill, boost }
+        })(input)
+    }
+}
+
+impl FromRecordBytes for RaceDataFlags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u32, Self::from_bits_retain)(input)
+    }
+}
+
+impl RecordCollection for HeadPart {
+    fn parse_next<'b>(
+        parser: &mut RecordParser<'_, 'b>,
+    ) -> Result<Option<Self>, RecordParseError<'b>> {
+        let index = parser.try_parse::<HeadPartIndex>(INDX)?;
+        let model_data = ModelData::parse_first(parser)?;
+
+        let (index, model_data) = match (index, model_data) {
+            // There was nothing so the collection is finished
+            (None, None) => return Ok(None),
+            // Model is present
+            (index, Some(model_data)) => (index, model_data),
+            // Index was present but model was missing
+            (Some(_), None) => {
+                return Err(RecordParseError::Custom(
+                    "Hair missing model data".to_string(),
+                ))
+            }
+        };
+
+        let large_icon_file_name = parser.try_parse::<String>(ICON)?;
+        let small_icon_file_name = parser.try_parse::<String>(MICO)?;
+
+        Ok(Some(Self {
+            index,
+            model_data,
+            large_icon_file_name,
+            small_icon_file_name,
+        }))
+    }
+}
+
+impl FromRecordBytes for HeadPartIndex {
     #[inline]
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         enum_value(input)
