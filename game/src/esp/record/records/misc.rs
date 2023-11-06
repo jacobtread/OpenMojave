@@ -1,21 +1,7 @@
-use nom::{
-    combinator::map,
-    number::complete::{le_f32, le_i32},
-    sequence::tuple,
+use super::{prelude::*, scpt::SCPT, soun::SOUN};
+use crate::esp::record::sub::{
+    destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds,
 };
-
-use crate::esp::{
-    record::{
-        sub::{
-            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, DATA,
-            EDID, FULL, ICON, MICO, OBND, RNAM, SCRI, YNAM, ZNAM,
-        },
-        FromRecordBytes, Record, RecordCollection, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
-};
-
-use super::{scpt::SCPT, soun::SOUN};
 
 /// Misc Item
 #[derive(Debug)]
@@ -30,7 +16,7 @@ pub struct MISC {
     pub destruction_data: Option<DestructionData>,
     pub sound_pick_up: Option<TypedFormId<SOUN>>,
     pub sound_drop: Option<TypedFormId<SOUN>>,
-    pub data: MISCData,
+    pub data: MiscData,
     pub sound_random: Option<TypedFormId<SOUN>>,
 }
 
@@ -48,7 +34,7 @@ impl Record for MISC {
         let destruction_data: Option<DestructionData> = DestructionData::parse_next(parser)?;
         let sound_pick_up: Option<TypedFormId<SOUN>> = parser.try_parse(YNAM)?;
         let sound_drop: Option<TypedFormId<SOUN>> = parser.try_parse(ZNAM)?;
-        let data: MISCData = parser.parse(DATA)?;
+        let data: MiscData = parser.parse(DATA)?;
         let sound_random: Option<TypedFormId<SOUN>> = parser.try_parse(RNAM)?;
 
         Ok(Self {
@@ -69,12 +55,12 @@ impl Record for MISC {
 }
 
 #[derive(Debug)]
-pub struct MISCData {
+pub struct MiscData {
     pub value: i32,
     pub weight: f32,
 }
 
-impl FromRecordBytes for MISCData {
+impl FromRecordBytes for MiscData {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(tuple((le_i32, le_f32)), |(value, weight)| Self {
             value,

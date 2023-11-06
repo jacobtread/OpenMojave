@@ -1,15 +1,8 @@
-use crate::esp::{
-    record::{
-        sub::{
-            destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, DATA,
-            EDID, FULL, OBND, SNAM,
-        },
-        Record, RecordCollection, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
+use crate::esp::record::sub::{
+    destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds,
 };
 
-use super::soun::SOUN;
+use super::{prelude::*, soun::SOUN};
 
 /// Moveable Static
 #[derive(Debug)]
