@@ -1,10 +1,4 @@
-use bitflags::bitflags;
-use nom::{
-    combinator::map,
-    number::complete::{le_f32, le_i32, le_u32},
-    sequence::tuple,
-};
-
+use super::{scpt::SCPT, soun::SOUN};
 use crate::esp::{
     record::{
         sub::{
@@ -15,8 +9,12 @@ use crate::esp::{
     },
     shared::{EditorId, TypedFormId, RGBA},
 };
-
-use super::{scpt::SCPT, soun::SOUN};
+use bitflags::bitflags;
+use nom::{
+    combinator::map,
+    number::complete::{le_f32, le_i32, le_u32},
+    sequence::tuple,
+};
 
 /// Light
 #[derive(Debug)]

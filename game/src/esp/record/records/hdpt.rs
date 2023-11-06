@@ -10,6 +10,7 @@ use crate::esp::{
 };
 
 /// Head part
+#[derive(Debug)]
 pub struct HDPT {
     pub editor_id: EditorId,
     pub name: String,
