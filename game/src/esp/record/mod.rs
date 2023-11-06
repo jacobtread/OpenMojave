@@ -323,6 +323,7 @@ pub trait FromRecordBytes: Sized {
 }
 
 /// FromRecordBytes implementor for getting all the bytes
+#[derive(Debug)]
 pub struct RawBytes(pub Vec<u8>);
 
 impl RawBytes {
