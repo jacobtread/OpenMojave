@@ -143,3 +143,6 @@ pub const NAM6: RecordType = RecordType::new(b"NAM6");
 pub const NAM7: RecordType = RecordType::new(b"NAM7");
 pub const NAM8: RecordType = RecordType::new(b"NAM8");
 pub const NAM9: RecordType = RecordType::new(b"NAM9");
+pub const RCIL: RecordType = RecordType::new(b"RCIL");
+pub const RCQY: RecordType = RecordType::new(b"RCQY");
+pub const RCOD: RecordType = RecordType::new(b"RCOD");
