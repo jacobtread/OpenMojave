@@ -1,9 +1,12 @@
-use super::{prelude::*, scpt::SCPT, soun::SOUN, stat::STAT};
+use super::{
+    efsh::EFSH, flst::FLST, imod::IMOD, ipds::IPDS, prelude::*, scpt::SCPT, soun::SOUN, stat::STAT,
+};
 use crate::esp::record::sub::{
     destruction::DestructionData, equipment_type::EquipmentType, model::ModelData,
     object_bounds::ObjectBounds, sound_level::SoundLevel,
 };
 
+/// Weapon
 #[derive(Debug)]
 pub struct WEAP {
     pub editor_id: EditorId,
@@ -19,14 +22,14 @@ pub struct WEAP {
     /// FormID of an AMMO or FLST record.
     pub ammo: FormId,
     pub destruction_data: Option<DestructionData>,
-    pub repair_list: Option<TypedFormId<() /* FLST */>>,
+    pub repair_list: Option<TypedFormId<FLST>>,
     pub equipment_type: EquipmentType,
-    pub biped_model_list: Option<TypedFormId<() /* FLST */>>,
+    pub biped_model_list: Option<TypedFormId<FLST>>,
     pub sound_pick_up: Option<TypedFormId<SOUN>>,
     pub sound_drop: Option<TypedFormId<SOUN>>,
     pub shell_casing_model_data: Option<ModelData>,
     pub scope_model_data: Option<ModelData>,
-    pub scope_effect: Option<TypedFormId<() /* EFSH */>>,
+    pub scope_effect: Option<TypedFormId<EFSH>>,
     pub scope_effect_model_data: Option<ModelData>,
     pub model_with_mod_1: Option<String>,
     pub model_with_mod_2: Option<String>,
@@ -37,7 +40,7 @@ pub struct WEAP {
     pub model_with_mod_1_2_3: Option<String>,
     pub vats_attack_name: Option<String>,
     pub embedded_weapon_node: Option<String>,
-    pub impact_data_set: Option<TypedFormId<() /* IPDS */>>,
+    pub impact_data_set: Option<TypedFormId<IPDS>>,
 
     pub first_person_model: Option<TypedFormId<STAT>>,
     pub first_person_model_with_mod_1: Option<TypedFormId<STAT>>,
@@ -48,9 +51,9 @@ pub struct WEAP {
     pub first_person_model_with_mod_2_3: Option<TypedFormId<STAT>>,
     pub first_person_model_with_mod_1_2_3: Option<TypedFormId<STAT>>,
 
-    pub weapon_mod_1: Option<TypedFormId<() /* IMOD */>>,
-    pub weapon_mod_2: Option<TypedFormId<() /* IMOD */>>,
-    pub weapon_mod_3: Option<TypedFormId<() /* IMOD */>>,
+    pub weapon_mod_1: Option<TypedFormId<IMOD>>,
+    pub weapon_mod_2: Option<TypedFormId<IMOD>>,
+    pub weapon_mod_3: Option<TypedFormId<IMOD>>,
 
     pub sound_gun_shoot_3d: Option<TypedFormId<SOUN>>,
     pub sound_gun_shoot_dist: Option<TypedFormId<SOUN>>,
@@ -69,6 +72,7 @@ pub struct WEAP {
     pub critial_data: (),
     pub vats: Option<()>,
     pub sound_level: SoundLevel,
+    // TODO:
 }
 
 #[derive(Debug)]
