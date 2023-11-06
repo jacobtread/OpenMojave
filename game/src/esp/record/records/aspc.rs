@@ -1,18 +1,5 @@
-use num_enum::TryFromPrimitive;
-
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{object_bounds::ObjectBounds, ANAM, EDID, INAM, OBND, RDAT, SNAM, WNAM},
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, FormId, TypedFormId},
-};
-
-use super::soun::SOUN;
-
-/// Represents a sound record
-type SoundRecord = TypedFormId<SOUN>;
+use super::{prelude::*, regn::REGN, soun::SOUN};
+use crate::esp::record::sub::object_bounds::ObjectBounds;
 
 /// Acoustic Space
 ///
@@ -24,19 +11,19 @@ pub struct ASPC {
     /// Bounds of the space object
     pub object_bounds: ObjectBounds,
     /// Nullable sound thats played by default within this space
-    pub default_loop: SoundRecord,
+    pub default_loop: NTypedFormId<SOUN>,
     /// Nullable sound played during the afternoon
-    pub afternoon: SoundRecord,
+    pub afternoon: NTypedFormId<SOUN>,
     /// Nullable sound played at dusk
-    pub dusk: SoundRecord,
+    pub dusk: NTypedFormId<SOUN>,
     /// Nullable sound played at night
-    pub night: SoundRecord,
+    pub night: NTypedFormId<SOUN>,
     /// Nullable crowd murmor background sound
-    pub walla: SoundRecord,
+    pub walla: NTypedFormId<SOUN>,
     /// The number of entities required to trigger the walla sound
     pub walla_trigger_count: u32,
-    /// Optionally use sound from a region (Nullable) (Interiors only)
-    pub use_region_sound: Option<FormId /* REGN */>,
+    /// Optionally use sound from a region (Interiors only)
+    pub use_region_sound: Option<TypedFormId<REGN>>,
     /// The type of environment
     pub env_type: EnvironmentType,
     /// Whether the space is an interior (Why is this an enum???)
@@ -47,17 +34,18 @@ impl Record for ASPC {
     const TYPE: RecordType = RecordType::new(b"ASPC");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
-        let editor_id = parser.parse::<EditorId>(EDID)?;
-        let object_bounds = parser.parse::<ObjectBounds>(OBND)?;
-        let default_loop = parser.parse::<SoundRecord>(SNAM)?;
-        let afternoon = parser.parse::<SoundRecord>(SNAM)?;
-        let dusk = parser.parse::<SoundRecord>(SNAM)?;
-        let night = parser.parse::<SoundRecord>(SNAM)?;
-        let walla = parser.parse::<SoundRecord>(SNAM)?;
-        let walla_trigger_count = parser.parse::<u32>(WNAM)?;
-        let use_region_sound = parser.try_parse::<FormId>(RDAT)?;
-        let env_type = parser.parse::<EnvironmentType>(ANAM)?;
-        let is_interior = parser.parse::<IsInterior>(INAM)?;
+        let editor_id: EditorId = parser.parse(EDID)?;
+        let object_bounds: ObjectBounds = parser.parse(OBND)?;
+        let default_loop: NTypedFormId<SOUN> = parser.parse(SNAM)?;
+        let afternoon: NTypedFormId<SOUN> = parser.parse(SNAM)?;
+        let dusk: NTypedFormId<SOUN> = parser.parse(SNAM)?;
+        let night: NTypedFormId<SOUN> = parser.parse(SNAM)?;
+        let walla: NTypedFormId<SOUN> = parser.parse(SNAM)?;
+        let walla_trigger_count: u32 = parser.parse(WNAM)?;
+        let use_region_sound: Option<TypedFormId<REGN>> = parser.try_parse(RDAT)?;
+        let env_type: EnvironmentType = parser.parse(ANAM)?;
+        let is_interior: IsInterior = parser.parse(INAM)?;
+
         Ok(Self {
             editor_id,
             object_bounds,
@@ -110,18 +98,18 @@ pub enum EnvironmentType {
     Plate = 30,
 }
 
-impl FromRecordBytes for EnvironmentType {
-    #[inline]
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
-        enum_value(input)
-    }
-}
-
 #[derive(Debug, Clone, Copy, TryFromPrimitive)]
 #[repr(u32)]
 pub enum IsInterior {
     No = 1,
     Yes = 2,
+}
+
+impl FromRecordBytes for EnvironmentType {
+    #[inline]
+    fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
+        enum_value(input)
+    }
 }
 
 impl FromRecordBytes for IsInterior {

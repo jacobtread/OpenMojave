@@ -1,2 +1,6 @@
+use super::prelude::*;
+
 #[derive(Debug)]
-pub struct ARMA {}
+pub struct ARMA {
+    // TODO:
+}
