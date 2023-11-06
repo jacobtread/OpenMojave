@@ -1,11 +1,11 @@
-use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC, prelude::*, refr::REFR};
+use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC_, prelude::*, refr::REFR};
 use crate::esp::record::sub::script::Script;
 
 /// Placed NPC
 #[derive(Debug)]
 pub struct ACHR {
     pub editor_id: EditorId,
-    pub base: TypedFormId<NPC>,
+    pub base: TypedFormId<NPC_>,
     pub encounter_zone: Option<TypedFormId<ECZN>>,
     pub idle_time: f32,
     pub idle: NTypedFormId<IDLE>,
@@ -19,7 +19,7 @@ pub struct ACHR {
     pub decals: Vec<XDCR>,
     /// FormID of a REFR, ACRE, ACHR, PGRE or PMIS record.
     pub linked_ref: Option<FormId>,
-    pub linked_ref_color: Option<XCLP>,
+    pub linked_ref_color: Option<LinkedRefColor>,
     pub flags: Option<XAPDFlags>,
     pub activate_parent_ref: Vec<XAPR>,
     pub activation_prompt: Option<String>,
@@ -60,7 +60,7 @@ impl Record for ACHR {
         let health: Option<f32> = parser.try_parse(XHLP)?;
         let decals: Vec<XDCR> = parser.try_parse_many(XDCR)?;
         let linked_ref: Option<FormId> = parser.try_parse(XLKR)?;
-        let linked_ref_color: Option<XCLP> = parser.try_parse(XCLP)?;
+        let linked_ref_color: Option<LinkedRefColor> = parser.try_parse(XCLP)?;
         let flags: Option<XAPDFlags> = parser.try_parse(XADP)?;
         let activate_parent_ref: Vec<XAPR> = parser.try_parse_many(XAPR)?;
         let activation_prompt: Option<String> = parser.try_parse(XATO)?;
@@ -106,7 +106,7 @@ pub struct XDCR {
 }
 
 #[derive(Debug)]
-pub struct XCLP {
+pub struct LinkedRefColor {
     pub start: RGBA,
     pub end: RGBA,
 }
@@ -155,7 +155,7 @@ impl FromRecordBytes for XDCR {
     }
 }
 
-impl FromRecordBytes for XCLP {
+impl FromRecordBytes for LinkedRefColor {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(tuple((RGBA::parse, RGBA::parse)), |(start, end)| Self {
             start,

@@ -8,7 +8,7 @@ pub struct ADDN {
     pub object_bounds: ObjectBounds,
     pub model_data: ModelData,
     pub node_index: i32,
-    pub data: ADDNData,
+    pub data: AddonNodeData,
 }
 
 impl Record for ADDN {
@@ -17,10 +17,9 @@ impl Record for ADDN {
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
         let object_bounds: ObjectBounds = parser.parse(OBND)?;
-        let model_data: ModelData = ModelData::parse_first(parser)?
-            .ok_or_else(|| RecordParseError::Custom("Missing model data for ADDN".to_string()))?;
+        let model_data: ModelData = ModelData::require(parser)?;
         let node_index: i32 = parser.parse(DATA)?;
-        let data: ADDNData = parser.parse(DNAM)?;
+        let data: AddonNodeData = parser.parse(DNAM)?;
         Ok(Self {
             editor_id,
             object_bounds,
@@ -32,12 +31,12 @@ impl Record for ADDN {
 }
 
 #[derive(Debug)]
-pub struct ADDNData {
+pub struct AddonNodeData {
     pub master_particle_system_cap: u16,
     pub unknown: u16,
 }
 
-impl FromRecordBytes for ADDNData {
+impl FromRecordBytes for AddonNodeData {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(
             tuple((le_u16, le_u16)),

@@ -19,7 +19,7 @@ use nom::{
     IResult,
 };
 use num_enum::TryFromPrimitive;
-use std::any::type_name;
+use std::any::{type_name, Any};
 use std::path::Path;
 use std::{
     fmt::{Debug, Display},
@@ -504,7 +504,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
     }
 }
 
-pub trait Record: Sized {
+pub trait Record: Sized + Send + Sync {
     const TYPE: RecordType;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>>;
