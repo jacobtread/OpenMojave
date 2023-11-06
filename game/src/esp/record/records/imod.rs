@@ -1,10 +1,9 @@
-use crate::esp::record::records::prelude::object_bounds::ObjectBounds;
-
 use super::{
     prelude::{destruction::DestructionData, model::ModelData, *},
     scpt::SCPT,
     soun::SOUN,
 };
+use crate::esp::record::sub::object_bounds::ObjectBounds;
 
 /// Item mod
 #[derive(Debug)]

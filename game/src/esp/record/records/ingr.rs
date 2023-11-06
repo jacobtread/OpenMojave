@@ -1,23 +1,7 @@
-use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    combinator::map,
-    number::complete::{le_i32, u8},
-    sequence::tuple,
+use super::{prelude::*, scpt::SCPT};
+use crate::esp::record::sub::{
+    effect::Effect, equipment_type::EquipmentType, model::ModelData, object_bounds::ObjectBounds,
 };
-
-use crate::esp::{
-    record::{
-        sub::{
-            effect::Effect, equipment_type::EquipmentType, model::ModelData,
-            object_bounds::ObjectBounds, DATA, EDID, ENIT, ETYP, FULL, ICON, MICO, OBND, SCRI,
-        },
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::{EditorId, TypedFormId},
-};
-
-use super::scpt::SCPT;
 
 /// Ingredient
 #[derive(Debug)]
@@ -51,9 +35,7 @@ impl Record for INGR {
         let effect_data: ENIT = parser.parse(ENIT)?;
         let effects: Vec<Effect> = parser.parse_collection()?;
         if effects.is_empty() {
-            return Err(crate::esp::record::RecordParseError::Custom(
-                "Missing INGR effects".to_string(),
-            ));
+            return Err(RecordParseError::Custom("Missing INGR effects".to_string()));
         }
 
         Ok(Self {
@@ -78,20 +60,20 @@ pub struct ENIT {
     pub flags: ENITFlags,
 }
 
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct ENITFlags: u8 {
+        const NO_AUTO_CALCULATION   = 0x01;
+        const FOOD_ITEM = 0x02;
+    }
+}
+
 impl FromRecordBytes for ENIT {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(
             tuple((le_i32, ENITFlags::parse, take(3usize))),
             |(value, flags, _)| Self { value, flags },
         )(input)
-    }
-}
-
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct ENITFlags: u8 {
-        const NO_AUTO_CALCULATION   = 0x01;
-        const FOOD_ITEM = 0x02;
     }
 }
 
