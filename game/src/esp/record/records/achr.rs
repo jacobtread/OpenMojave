@@ -1,28 +1,28 @@
-use bitflags::bitflags;
-use fyrox::core::algebra::Vector3;
-use nom::{bytes::complete::take, combinator::rest};
-
-pub use super::prelude::*;
+use super::prelude::*;
+use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC, refr::REFR};
 use crate::esp::{
     record::sub::{
         script::Script, DATA, EDID, INAM, NAME, TNAM, XADP, XAPR, XATO, XCLP, XCNT, XDCR, XEMI,
         XESP, XEZN, XHLP, XIBS, XLCM, XLKR, XMBR, XMRC, XPPA, XPRD, XRDS, XRGB, XRGD, XSCL,
     },
-    shared::{EditorId, FormId, TypedFormId, RGBA},
+    shared::{EditorId, FormId, NTypedFormId, TypedFormId, RGBA},
 };
+use bitflags::bitflags;
+use fyrox::core::algebra::Vector3;
+use nom::{bytes::complete::take, combinator::rest};
 
 /// Placed NPC
 #[derive(Debug)]
 pub struct ACHR {
     pub editor_id: EditorId,
-    pub base: TypedFormId<() /* NPC_ */>,
-    pub encounter_zone: Option<TypedFormId<() /* ECZN */>>,
+    pub base: TypedFormId<NPC>,
+    pub encounter_zone: Option<TypedFormId<ECZN>>,
     pub idle_time: f32,
-    pub idle: TypedFormId<() /* IDLE / null */>,
+    pub idle: NTypedFormId<IDLE>,
     pub embedded_script: Script,
-    pub topic: TypedFormId<() /* DIAL or null */>,
+    pub topic: NTypedFormId<DIAL>,
     pub level_modifier: Option<i32>,
-    pub merchant_container: Option<TypedFormId<() /* REFR */>>,
+    pub merchant_container: Option<TypedFormId<REFR>>,
     pub count: Option<i32>,
     pub radius: Option<f32>,
     pub health: Option<f32>,
@@ -36,7 +36,7 @@ pub struct ACHR {
     pub enable_parent: Option<XESP>,
     /// FormID of a LIGH or REGN record.
     pub emittance: Option<FormId>,
-    pub multibound_ref: Option<TypedFormId<() /* REFR */>>,
+    pub multibound_ref: Option<TypedFormId<REFR>>,
     pub ignored_by_sandbox: bool,
     pub scale: Option<f32>,
     pub position_rotation: PositionRotation,
@@ -47,8 +47,8 @@ impl Record for ACHR {
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
-        let base: TypedFormId<()> = parser.parse(NAME)?;
-        let encounter_zone: Option<TypedFormId<()>> = parser.try_parse(XEZN)?;
+        let base: TypedFormId<_> = parser.parse(NAME)?;
+        let encounter_zone: Option<TypedFormId<_>> = parser.try_parse(XEZN)?;
 
         // Ragdoll data
         parser.skip_type(XRGD);
@@ -60,11 +60,11 @@ impl Record for ACHR {
         // Patrol script marker
         parser.require_type(XPPA)?;
 
-        let idle: TypedFormId<()> = parser.parse(INAM)?;
+        let idle: TypedFormId<_> = parser.parse(INAM)?;
         let embedded_script: Script = Script::require_parse_next(parser)?;
-        let topic: TypedFormId<()> = parser.parse(TNAM)?;
+        let topic: TypedFormId<_> = parser.parse(TNAM)?;
         let level_modifier: Option<i32> = parser.try_parse(XLCM)?;
-        let merchant_container: Option<TypedFormId<()>> = parser.try_parse(XMRC)?;
+        let merchant_container: Option<TypedFormId<_>> = parser.try_parse(XMRC)?;
         let count: Option<i32> = parser.try_parse(XCNT)?;
         let radius: Option<f32> = parser.try_parse(XRDS)?;
         let health: Option<f32> = parser.try_parse(XHLP)?;
@@ -76,7 +76,7 @@ impl Record for ACHR {
         let activation_prompt: Option<String> = parser.try_parse(XATO)?;
         let enable_parent: Option<XESP> = parser.try_parse(XESP)?;
         let emittance: Option<FormId> = parser.try_parse(XEMI)?;
-        let multibound_ref: Option<TypedFormId<()>> = parser.try_parse(XMBR)?;
+        let multibound_ref: Option<TypedFormId<_>> = parser.try_parse(XMBR)?;
         let ignored_by_sandbox: bool = parser.try_next(XIBS).is_some();
         let scale: Option<f32> = parser.try_parse(XSCL)?;
         let position_rotation: PositionRotation = parser.parse(DATA)?;

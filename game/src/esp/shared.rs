@@ -51,6 +51,9 @@ impl FromRecordBytes for RGBA {
     }
 }
 
+/// Type alias for a typed form id that might be null
+pub type NTypedFormId<T> = TypedFormId<T>;
+
 /// Represents a FormId of a specific type
 pub struct TypedFormId<T> {
     pub id: FormId,
