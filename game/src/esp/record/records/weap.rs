@@ -1,4 +1,5 @@
 use bitflags::bitflags;
+use fyrox::core::algebra::Vector2;
 use num_enum::TryFromPrimitive;
 
 use crate::esp::{
@@ -77,11 +78,10 @@ pub struct WEAP {
     pub sound_mod_1_shoot_dist: Option<TypedFormId<SOUN>>,
     pub sound_mod_1_shoot_2d: Option<TypedFormId<SOUN>>,
     pub data: (),
-    pub dnam: (),
+    pub dnam: DNAM,
     pub critial_data: (),
     pub vats: Option<()>,
     pub sound_level: SoundLevel,
-    // TODO: Remaining fields
 }
 
 #[derive(Debug)]
@@ -110,11 +110,48 @@ pub struct DNAM {
     pub attack_animation: u8,
     pub projectile_cloud: u8,
     pub embedded_weapon_actor_value: u8,
-    pub min_range: f32,
-    pub max_range: f32,
+    /// Min, Max
+    pub range: Vector2<f32>,
     pub on_hit: u32,
     pub flags_2: u32,
-    // TODO: Remaining fields
+    pub animation_attack_multipler: f32,
+    pub fire_rate: f32,
+    pub override_action_points: f32,
+    /// Left, Right
+    pub rumble_motor_strength: Vector2<f32>,
+    pub rumble_duration: f32,
+    pub override_damage_to_weapon_mult: f32,
+    pub attack_shots_sec: f32,
+    pub reload_time: f32,
+    pub jam_time: f32,
+    pub aim_arc: f32,
+    // TODO: Enum
+    pub skill: i32,
+    pub rumble_pattern: u32,
+    pub rumble_wave_length: f32,
+    pub limb_damage_multipler: f32,
+    // TODO: Enum
+    pub resistance_type: i32,
+    pub sight_usage: f32,
+    // Min, Max
+    pub semi_auto_fire_delay: Vector2<f32>,
+    // TODO: Enum
+    pub effect_mod_1: u32,
+    // TODO: Enum
+    pub effect_mod_2: u32,
+    // TODO: Enum
+    pub effect_mod_3: u32,
+    pub power_attack_animation_override: u32,
+    pub strength_requirement: u32,
+    // TODO: Enum
+    pub reload_animation_mod: u32,
+    pub regen_rate: f32,
+    pub kill_impulse: f32,
+    pub value_b_mod_1: f32,
+    pub value_b_mod_2: f32,
+    pub value_b_mod_3: f32,
+    pub impulse_dist: f32,
+    pub skill_requirement: u32,
 }
 
 #[derive(Debug, Clone, Copy, TryFromPrimitive, PartialEq, Eq)]
