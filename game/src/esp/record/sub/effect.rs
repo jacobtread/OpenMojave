@@ -2,7 +2,7 @@ use nom::{combinator::map, number::complete::le_u32, sequence::tuple};
 use num_enum::TryFromPrimitive;
 
 use crate::esp::{
-    record::{enum_value, FromRecordBytes, RecordCollection},
+    record::{enum_value, records::mgef::MGEF, FromRecordBytes, RecordCollection},
     shared::TypedFormId,
 };
 
@@ -10,7 +10,7 @@ use super::{actor_values::ActorValue, condition::CTDA, CTDA, EDID, EFIT};
 
 #[derive(Debug)]
 pub struct Effect {
-    pub base_effect: Option<TypedFormId<() /* MGEF */>>,
+    pub base_effect: Option<TypedFormId<MGEF>>,
     pub data: EFIT,
     pub condition: Option<CTDA>,
 }
@@ -19,13 +19,13 @@ impl RecordCollection for Effect {
     fn parse_next<'b>(
         parser: &mut crate::esp::record::RecordParser<'_, 'b>,
     ) -> Result<Option<Self>, crate::esp::record::RecordParseError<'b>> {
-        let base_effect = parser.try_parse::<TypedFormId<()>>(EDID)?;
-        let data = match parser.try_parse::<EFIT>(EFIT)? {
+        let base_effect: Option<TypedFormId<MGEF>> = parser.try_parse(EDID)?;
+        let data: EFIT = match parser.try_parse::<EFIT>(EFIT)? {
             Some(value) => value,
             // TODO: If base_effect was present then error?
             None => return Ok(None),
         };
-        let condition = parser.try_parse::<CTDA>(CTDA)?;
+        let condition: Option<CTDA> = parser.try_parse::<CTDA>(CTDA)?;
         Ok(Some(Self {
             base_effect,
             data,

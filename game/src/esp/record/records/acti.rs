@@ -1,7 +1,6 @@
 use super::{prelude::*, scpt::SCPT, soun::SOUN, tact::TACT, watr::WATR};
-use crate::esp::{
-    record::sub::{destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds, *},
-    shared::{EditorId, TypedFormId},
+use crate::esp::record::sub::{
+    destruction::DestructionData, model::ModelData, object_bounds::ObjectBounds,
 };
 
 /// Activator

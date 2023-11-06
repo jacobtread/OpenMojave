@@ -1,8 +1,11 @@
 pub mod prelude {
-    pub use crate::esp::record::{
-        FromRecordBytes, Record, RecordCollection, RecordParseError, RecordParser, RecordType,
+    pub use crate::esp::{
+        record::{
+            sub::*, FromRecordBytes, Record, RecordCollection, RecordParseError, RecordParser,
+            RecordType,
+        },
+        shared::{EditorId, FormId, NTypedFormId, String16, String32, TypedFormId, RGBA},
     };
-
     pub use nom::{combinator::map, number::complete::*, sequence::tuple, IResult};
 }
 

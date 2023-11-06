@@ -1,17 +1,8 @@
+use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC, prelude::*, refr::REFR};
+use crate::esp::record::sub::script::Script;
 use bitflags::bitflags;
 use fyrox::core::algebra::Vector3;
 use nom::{bytes::complete::take, combinator::rest};
-
-pub use super::prelude::*;
-use super::{dial::DIAL, eczn::ECZN, idle::IDLE, npc::NPC, refr::REFR};
-use crate::esp::{
-    record::sub::{
-        script::Script, DATA, EDID, INAM, NAME, TNAM, XADP, XAPR, XATO, XCLP, XCNT, XDCR, XEMI,
-        XESP, XEZN, XHLP, XIBS, XLCM, XLKR, XMBR, XMRC, XOWN, XPPA, XPRD, XRDS, XRGB, XRGD, XRNK,
-        XSCL,
-    },
-    shared::{EditorId, FormId, NTypedFormId, TypedFormId, RGBA},
-};
 
 /// Placed Creature
 #[derive(Debug)]
