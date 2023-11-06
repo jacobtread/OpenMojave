@@ -1,5 +1,6 @@
 use super::{ccrd::CCRD, prelude::*};
 
+/// Caravan Deck
 #[derive(Debug)]
 pub struct CDCK {
     pub editor_id: EditorId,

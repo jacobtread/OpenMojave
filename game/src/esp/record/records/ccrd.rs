@@ -1,5 +1,6 @@
 use super::prelude::*;
 
+/// Caravan Card
 #[derive(Debug)]
 pub struct CCRD {
     // TODO:

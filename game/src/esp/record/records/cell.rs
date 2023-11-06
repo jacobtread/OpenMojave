@@ -1,5 +1,6 @@
 use super::prelude::*;
 
+/// Cell
 #[derive(Debug)]
 pub struct CELL {
     // TODO:

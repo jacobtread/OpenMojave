@@ -1,5 +1,7 @@
 use super::prelude::*;
 
+/// Camera Shot
+
 #[derive(Debug)]
 pub struct CAMS {
     // TODO:

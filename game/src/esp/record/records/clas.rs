@@ -1,22 +1,7 @@
-use bitflags::bitflags;
-use nom::{
-    bytes::complete::take,
-    combinator::map,
-    number::complete::{le_i32, le_u32, u8},
-    sequence::tuple,
-    IResult,
-};
-use num_enum::TryFromPrimitive;
+use super::prelude::*;
+use crate::esp::record::sub::skill::Skill;
 
-use crate::esp::{
-    record::{
-        enum_value,
-        sub::{skill::Skill, ATTR, DATA, DESC, EDID, FULL, ICON, MICO},
-        FromRecordBytes, Record, RecordParseError, RecordParser, RecordType,
-    },
-    shared::EditorId,
-};
-
+/// Class
 #[derive(Debug)]
 pub struct CLAS {
     pub editor_id: EditorId,
@@ -32,15 +17,15 @@ impl Record for CLAS {
     const TYPE: RecordType = RecordType::new(b"CLAS");
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
-        let editor_id = parser.parse::<EditorId>(EDID)?;
-        let name = parser.parse::<String>(FULL)?;
-        let description = parser.parse::<String>(DESC)?;
+        let editor_id: EditorId = parser.parse(EDID)?;
+        let name: String = parser.parse(FULL)?;
+        let description: String = parser.parse(DESC)?;
 
-        let large_icon_file_name = parser.try_parse::<String>(ICON)?;
-        let small_icon_file_name = parser.try_parse::<String>(MICO)?;
+        let large_icon_file_name: Option<String> = parser.try_parse(ICON)?;
+        let small_icon_file_name: Option<String> = parser.try_parse(MICO)?;
 
-        let data = parser.parse::<CLASDATA>(DATA)?;
-        let attributes = parser.parse::<CLASATTR>(ATTR)?;
+        let data: CLASDATA = parser.parse(DATA)?;
+        let attributes: CLASATTR = parser.parse(ATTR)?;
 
         Ok(Self {
             editor_id,
@@ -71,6 +56,41 @@ bitflags! {
     pub struct CLASDataFlags: u32 {
         const PLAYABLE = 0x00000001;
         const GUARD = 0x00000002;
+    }
+}
+
+#[derive(Debug)]
+pub struct CLASATTR {
+    pub strength: u8,
+    pub perception: u8,
+    pub endurance: u8,
+    pub charisma: u8,
+    pub intelligence: u8,
+    pub agility: u8,
+    pub luck: u8,
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct ServiceFlags: u32 {
+        const WEAPONS   = 0x00000001;
+        const ARMOR     = 0x00000002;
+        const ALCHOL    = 0x00000004;
+        const BOOKS     = 0x00000008;
+        const FOOD      = 0x00000010;
+        const CHEMS     = 0x00000020;
+        const STIMPACKS = 0x00000040;
+        const LIGHTS    = 0x00000080;
+        const U1        = 0x00000100;
+        const U2        = 0x00000200;
+        const MISC      = 0x00000400;
+        const U3        = 0x00000800;
+        const U4        = 0x00001000;
+        const POTIONS   = 0x00002000;
+        const TRAINING  = 0x00004000;
+        const U5        = 0x00008000;
+        const RECHARGE  = 0x00010000;
+        const REPAIR    = 0x00020000;
     }
 }
 
@@ -119,17 +139,6 @@ impl FromRecordBytes for CLASDATA {
     }
 }
 
-#[derive(Debug)]
-pub struct CLASATTR {
-    pub strength: u8,
-    pub perception: u8,
-    pub endurance: u8,
-    pub charisma: u8,
-    pub intelligence: u8,
-    pub agility: u8,
-    pub luck: u8,
-}
-
 impl FromRecordBytes for CLASATTR {
     fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         map(
@@ -147,32 +156,8 @@ impl FromRecordBytes for CLASATTR {
     }
 }
 
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct ServiceFlags: u32 {
-        const WEAPONS   = 0x00000001;
-        const ARMOR     = 0x00000002;
-        const ALCHOL    = 0x00000004;
-        const BOOKS     = 0x00000008;
-        const FOOD      = 0x00000010;
-        const CHEMS     = 0x00000020;
-        const STIMPACKS = 0x00000040;
-        const LIGHTS    = 0x00000080;
-        const U1        = 0x00000100;
-        const U2        = 0x00000200;
-        const MISC      = 0x00000400;
-        const U3        = 0x00000800;
-        const U4        = 0x00001000;
-        const POTIONS   = 0x00002000;
-        const TRAINING  = 0x00004000;
-        const U5        = 0x00008000;
-        const RECHARGE  = 0x00010000;
-        const REPAIR    = 0x00020000;
-    }
-}
-
-impl ServiceFlags {
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        map(le_u32, ServiceFlags::from_bits_retain)(input)
+impl FromRecordBytes for ServiceFlags {
+    fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        map(le_u32, Self::from_bits_retain)(input)
     }
 }

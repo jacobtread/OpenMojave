@@ -1,5 +1,6 @@
 use super::prelude::*;
 
+/// Challenge
 #[derive(Debug)]
 pub struct CHAL {
     // TODO:

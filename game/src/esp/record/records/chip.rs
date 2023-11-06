@@ -3,6 +3,7 @@ use super::{
     soun::SOUN,
 };
 
+/// Casino Chip
 #[derive(Debug)]
 pub struct CHIP {
     pub editor_id: EditorId,
