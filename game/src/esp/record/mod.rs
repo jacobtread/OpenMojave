@@ -107,14 +107,7 @@ pub struct RawRecord<'a> {
 
 impl<'b> RawRecord<'b> {
     pub fn parse_record<'a, R: Record>(&'a self) -> Result<R, RecordParseError<'b>> {
-        let (_, records) = RawSubRecord::parse_all(self.data)?;
-        println!("Total Records: {}", records.len());
-
-        let mut parser = RecordParser {
-            record: self,
-            record_iter: records.iter().peekable(),
-        };
-
+        let mut parser = RecordParser::new(self)?;
         R::parse(&mut parser)
     }
 
@@ -396,16 +389,29 @@ pub trait RecordCollection: Sized {
 /// Iterator over sub records to make parsing easier
 pub struct RecordParser<'a, 'b> {
     pub record: &'a RawRecord<'b>,
-    /// Iterator over the raw records
-    pub record_iter: Peekable<std::slice::Iter<'a, RawSubRecord<'b>>>,
+    pub records: Vec<RawSubRecord<'b>>,
+    pub record_index: usize,
 }
 
 impl<'a, 'b> RecordParser<'a, 'b> {
+    pub fn new(record: &'a RawRecord<'b>) -> Result<RecordParser<'a, 'b>, RecordParseError<'b>> {
+        let (_, records) = RawSubRecord::parse_all(record.data)?;
+
+        Ok(RecordParser {
+            record,
+            records,
+            record_index: 0,
+        })
+    }
+
     /// Gets the next element requiring that one exist
-    fn require_next(&mut self) -> Result<&RawSubRecord<'b>, RecordParseError<'b>> {
-        self.record_iter
-            .next()
-            .ok_or(RecordParseError::NoMoreContent)
+    fn next(&mut self) -> Result<&RawSubRecord<'b>, RecordParseError<'b>> {
+        let value = self
+            .records
+            .get(self.record_index)
+            .ok_or(RecordParseError::NoMoreContent)?;
+        self.record_index += 1;
+        Ok(value)
     }
 
     /// Gets the next element requiring that one exist and
@@ -414,21 +420,29 @@ impl<'a, 'b> RecordParser<'a, 'b> {
         &mut self,
         ty: RecordType,
     ) -> Result<&RawSubRecord<'b>, RecordParseError<'b>> {
-        let record = self.require_next()?;
-
-        if record.ty != ty {
-            return Err(RecordParseError::UnexpectedType {
-                expected: ty,
-                actual: record.ty,
-            });
-        }
-
-        Ok(record)
+        self.next()
+            // Error if the record type doesn't match
+            .and_then(|record| {
+                if record.ty == ty {
+                    Ok(record)
+                } else {
+                    Err(RecordParseError::UnexpectedType {
+                        expected: ty,
+                        actual: record.ty,
+                    })
+                }
+            })
     }
 
     /// Gets the next record if it matches the provided type
-    pub fn try_next(&mut self, ty: RecordType) -> Option<&RawSubRecord<'b>> {
-        self.record_iter.next_if(|record| record.ty == ty)
+    pub fn next_if(&mut self, ty: RecordType) -> Option<&RawSubRecord<'b>> {
+        let item = self.records.get(self.record_index)?;
+        if item.ty == ty {
+            self.record_index += 1;
+            Some(item)
+        } else {
+            None
+        }
     }
 
     /// Requires the next record type is the the provided type
@@ -440,12 +454,13 @@ impl<'a, 'b> RecordParser<'a, 'b> {
     }
 
     /// Skips the next type ignoring whether it exists
+    #[inline]
     pub fn skip_type(&mut self, ty: RecordType) {
-        self.record_iter.next_if(|record| record.ty == ty);
+        _ = self.next_if(ty);
     }
 
     pub fn skip_while_type(&mut self, ty: RecordType) {
-        while self.record_iter.next_if(|record| record.ty == ty).is_some() {}
+        while self.next_if(ty).is_some() {}
     }
 
     pub fn parse<T>(&mut self, ty: RecordType) -> Result<T, RecordParseError<'b>>
@@ -478,9 +493,7 @@ impl<'a, 'b> RecordParser<'a, 'b> {
     where
         T: FromRecordBytes,
     {
-        self.record_iter
-            // Only take next record if the type matches
-            .next_if(|record| record.ty == ty)
+        self.next_if(ty)
             // Attempt to parse the matching record
             .map(|record| {
                 let (_, this) = all_consuming(T::parse)(record.data)?;

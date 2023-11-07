@@ -75,6 +75,14 @@ pub struct WEAP {
     // TODO:
 }
 
+impl Record for WEAP {
+    const TYPE: RecordType = WEAP;
+
+    fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
+        todo!()
+    }
+}
+
 #[derive(Debug)]
 pub struct DATA {
     pub value: i32,

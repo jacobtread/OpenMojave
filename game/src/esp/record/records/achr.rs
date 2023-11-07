@@ -67,7 +67,7 @@ impl Record for ACHR {
         let enable_parent: Option<XESP> = parser.try_parse(XESP)?;
         let emittance: Option<FormId> = parser.try_parse(XEMI)?;
         let multibound_ref: Option<TypedFormId<_>> = parser.try_parse(XMBR)?;
-        let ignored_by_sandbox: bool = parser.try_next(XIBS).is_some();
+        let ignored_by_sandbox: bool = parser.next_if(XIBS).is_some();
         let scale: Option<f32> = parser.try_parse(XSCL)?;
         let position_rotation: PositionRotation = parser.parse(DATA)?;
 
