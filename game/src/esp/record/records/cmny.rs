@@ -18,7 +18,7 @@ pub struct CMNY {
 }
 
 impl Record for CMNY {
-    const TYPE: RecordType = RecordType::new(b"CMNY");
+    const TYPE: RecordType = CMNY;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

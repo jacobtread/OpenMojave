@@ -7,7 +7,7 @@ pub struct CLMT {
 }
 
 impl Record for CLMT {
-    const TYPE: RecordType = RecordType::new(b"CLMT");
+    const TYPE: RecordType = CLMT;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()

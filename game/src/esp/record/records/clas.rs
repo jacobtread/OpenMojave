@@ -14,7 +14,7 @@ pub struct CLAS {
 }
 
 impl Record for CLAS {
-    const TYPE: RecordType = RecordType::new(b"CLAS");
+    const TYPE: RecordType = CLAS;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

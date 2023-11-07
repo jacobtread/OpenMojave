@@ -18,7 +18,7 @@ pub struct CHIP {
 }
 
 impl Record for CHIP {
-    const TYPE: RecordType = RecordType::new(b"CHIP");
+    const TYPE: RecordType = CHIP;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

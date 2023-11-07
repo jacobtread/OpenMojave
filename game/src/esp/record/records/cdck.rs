@@ -10,7 +10,7 @@ pub struct CDCK {
 }
 
 impl Record for CDCK {
-    const TYPE: RecordType = RecordType::new(b"CDCK");
+    const TYPE: RecordType = CDCK;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

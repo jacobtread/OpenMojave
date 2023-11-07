@@ -12,7 +12,7 @@ pub struct AVIF {
 }
 
 impl Record for AVIF {
-    const TYPE: RecordType = RecordType::new(b"AVID");
+    const TYPE: RecordType = AVIF;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

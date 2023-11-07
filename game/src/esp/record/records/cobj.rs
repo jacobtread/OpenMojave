@@ -20,7 +20,7 @@ pub struct COBJ {
 }
 
 impl Record for COBJ {
-    const TYPE: RecordType = RecordType::new(b"COBJ");
+    const TYPE: RecordType = COBJ;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: Option<EditorId> = parser.try_parse(EDID)?;

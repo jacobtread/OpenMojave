@@ -7,7 +7,7 @@ pub struct CHAL {
 }
 
 impl Record for CHAL {
-    const TYPE: RecordType = RecordType::new(b"CHAL");
+    const TYPE: RecordType = CHAL;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()

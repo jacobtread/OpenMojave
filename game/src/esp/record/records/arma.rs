@@ -24,7 +24,7 @@ pub struct ARMA {
 }
 
 impl Record for ARMA {
-    const TYPE: RecordType = RecordType::new(b"ARMA");
+    const TYPE: RecordType = ARMA;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

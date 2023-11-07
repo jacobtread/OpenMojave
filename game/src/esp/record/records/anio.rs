@@ -12,12 +12,11 @@ pub struct ANIO {
 }
 
 impl Record for ANIO {
-    const TYPE: RecordType = RecordType::new(b"ANIO");
+    const TYPE: RecordType = ANIO;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
-        let model_data: ModelData = ModelData::parse_first(parser)?
-            .ok_or_else(|| RecordParseError::Custom("ANIO missing model data".to_string()))?;
+        let model_data: ModelData = ModelData::require(parser)?;
         let data: TypedFormId<IDLE> = parser.parse(DATA)?;
 
         Ok(Self {
