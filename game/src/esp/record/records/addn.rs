@@ -12,7 +12,7 @@ pub struct ADDN {
 }
 
 impl Record for ADDN {
-    const TYPE: RecordType = RecordType::new(b"ADDN");
+    const TYPE: RecordType = ADDN;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

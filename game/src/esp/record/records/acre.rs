@@ -44,7 +44,7 @@ pub struct ACRE {
 }
 
 impl Record for ACRE {
-    const TYPE: RecordType = RecordType::new(b"ACHR");
+    const TYPE: RecordType = ACRE;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

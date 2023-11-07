@@ -21,7 +21,7 @@ pub struct ACTI {
 }
 
 impl Record for ACTI {
-    const TYPE: RecordType = RecordType::new(b"ACTI");
+    const TYPE: RecordType = ACTI;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

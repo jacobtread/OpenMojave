@@ -9,7 +9,7 @@ pub struct AMEF {
 }
 
 impl Record for AMEF {
-    const TYPE: RecordType = RecordType::new(b"AMEF");
+    const TYPE: RecordType = AMEF;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

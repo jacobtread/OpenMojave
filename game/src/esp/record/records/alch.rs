@@ -23,12 +23,12 @@ pub struct ALCH {
     pub sound_drop: Option<TypedFormId<SOUN>>,
     pub equipment_type: EquipmentType,
     pub weight: f32,
-    pub effect_data: ENIT,
+    pub data: IngestibleData,
     pub effects: Vec<Effect>,
 }
 
 impl Record for ALCH {
-    const TYPE: RecordType = RecordType::new(b"ALCH");
+    const TYPE: RecordType = ALCH;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
@@ -43,12 +43,10 @@ impl Record for ALCH {
         let sound_drop: Option<TypedFormId<SOUN>> = parser.try_parse(ZNAM)?;
         let equipment_type: EquipmentType = parser.parse(ETYP)?;
         let weight: f32 = parser.parse(DATA)?;
-        let effect_data: ENIT = parser.parse(ENIT)?;
+        let effect_data: IngestibleData = parser.parse(ENIT)?;
         let effects = parser.parse_collection::<Effect>()?;
         if effects.is_empty() {
-            return Err(crate::esp::record::RecordParseError::Custom(
-                "Missing ALCH effect".to_string(),
-            ));
+            return Err(RecordParseError::Custom("Missing ALCH effect".to_string()));
         }
 
         Ok(Self {
@@ -64,16 +62,16 @@ impl Record for ALCH {
             sound_drop,
             equipment_type,
             weight,
-            effect_data,
+            data: effect_data,
             effects,
         })
     }
 }
 
 #[derive(Debug)]
-pub struct ENIT {
+pub struct IngestibleData {
     pub value: i32,
-    pub flags: ENITFlags,
+    pub flags: IngestibleFlags,
     pub withdrawal_effect: NTypedFormId<SPEL>,
     pub addiction_chance: f32,
     pub sound_consume: NTypedFormId<SOUN>,
@@ -81,19 +79,19 @@ pub struct ENIT {
 
 bitflags! {
     #[derive(Debug, Clone, Copy)]
-    pub struct ENITFlags: u8 {
-        const NO_AUTO_CALCULATION   = 0x01;
-        const FOOD_ITEM = 0x02;
-        const MEDICINE = 0x04;
+    pub struct IngestibleFlags: u8 {
+        const NO_AUTO_CALCULATION = 0x01;
+        const FOOD_ITEM           = 0x02;
+        const MEDICINE            = 0x04;
     }
 }
 
-impl FromRecordBytes for ENIT {
+impl FromRecordBytes for IngestibleData {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(
             tuple((
                 le_i32,
-                ENITFlags::parse,
+                IngestibleFlags::parse,
                 take(3usize),
                 NTypedFormId::parse,
                 le_f32,
@@ -110,7 +108,7 @@ impl FromRecordBytes for ENIT {
     }
 }
 
-impl FromRecordBytes for ENITFlags {
+impl FromRecordBytes for IngestibleFlags {
     fn parse(input: &[u8]) -> nom::IResult<&[u8], Self> {
         map(u8, Self::from_bits_retain)(input)
     }

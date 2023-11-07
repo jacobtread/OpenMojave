@@ -7,7 +7,7 @@ pub struct BPTD {
 }
 
 impl Record for BPTD {
-    const TYPE: RecordType = RecordType::new(b"BPTD");
+    const TYPE: RecordType = BPTD;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()
