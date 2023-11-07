@@ -7,6 +7,13 @@ use nom::combinator::{all_consuming, map_res};
 use nom::multi::many0;
 use nom::number::complete::{i8, le_f32, le_i16, le_i32, le_u16, le_u32, u8};
 use nom::sequence::tuple;
+use sub::GRUP;
+
+use self::records::cell::CELL;
+use self::records::dial::DIAL;
+use self::records::prelude::TypedFormId;
+use self::records::wrld::WRLD;
+use self::records::ParsedRecord;
 
 use super::shared::FormId;
 use crate::esp::record::records::scpt::SCPT;
@@ -20,6 +27,7 @@ use nom::{
 };
 use num_enum::TryFromPrimitive;
 use std::any::{type_name, Any};
+use std::f32::consts::E;
 use std::path::Path;
 use std::{
     fmt::{Debug, Display},
@@ -105,7 +113,22 @@ pub struct RawRecord<'a> {
     pub data: &'a [u8],
 }
 
+#[derive(Debug)]
+pub struct OwnedRawRecord {
+    pub ty: RecordType,
+    pub flags: RecordFlags,
+    pub form_id: u32,
+    pub revision: u32,
+    pub version: u16,
+    pub data: Vec<u8>,
+}
+
 impl<'b> RawRecord<'b> {
+    #[inline]
+    pub fn parsed<'a>(&'a self) -> Result<ParsedRecord, RecordParseError<'b>> {
+        ParsedRecord::parse(self)
+    }
+
     pub fn parse_record<'a, R: Record>(&'a self) -> Result<R, RecordParseError<'b>> {
         let mut parser = RecordParser::new(self)?;
         R::parse(&mut parser)
@@ -186,68 +209,126 @@ where
 
 #[derive(Debug)]
 pub struct RawGroup<'a> {
-    pub label: u32,
+    pub label: [u8; 4],
     pub ty: GroupType,
     pub stamp: u16,
     pub data: &'a [u8],
 }
 
-pub enum TypedGroup<'a> {
+pub enum Group {
     TopLevel {
         label: RecordType,
-        records: RawRecord<'a>,
+        records: Vec<EsmEntry>,
     },
     WorldChildren {
-        world: FormId,
-        records: RawRecord<'a>,
+        world: TypedFormId<WRLD>,
+        records: Vec<EsmEntry>,
     },
     InteriorCellBlock {
         cell_block_number: i32,
-        records: RawRecord<'a>,
+        records: Vec<EsmEntry>,
     },
     InteriorCellSubBlock {
         cell_sub_block_number: i32,
-        records: RawRecord<'a>,
+        records: Vec<EsmEntry>,
     },
     ExteriorCellBlock {
         y: u8,
         x: u8,
-        records: RawRecord<'a>,
+        records: Vec<EsmEntry>,
     },
     ExteriorCellSubBlock {
         y: u8,
         x: u8,
-        records: RawRecord<'a>,
+        records: Vec<EsmEntry>,
     },
     CellChildren {
-        cell: FormId,
-        records: RawRecord<'a>,
+        cell: TypedFormId<CELL>,
+        records: Vec<EsmEntry>,
     },
     TopicChildren {
-        cell: FormId,
-        records: RawRecord<'a>,
+        cell: TypedFormId<DIAL>,
+        records: Vec<EsmEntry>,
     },
     CellPersistentChildren {
-        cell: FormId,
-        records: RawRecord<'a>,
+        cell: TypedFormId<CELL>,
+        records: Vec<EsmEntry>,
     },
     CellTemporaryChildren {
-        cell: FormId,
-        records: RawRecord<'a>,
+        cell: TypedFormId<CELL>,
+        records: Vec<EsmEntry>,
     },
     CellVisibleDistantChildren {
-        cell: FormId,
-        records: RawRecord<'a>,
+        cell: TypedFormId<CELL>,
+        records: Vec<EsmEntry>,
     },
 }
 
-impl RawGroup<'_> {
+pub enum EsmEntry {
+    Record(ParsedRecord),
+    Group(Group),
+}
+
+impl<'b> RawGroup<'b> {
     const HEADER_LENGTH: u32 = 24;
-    const GROUP_RECORD: RecordType = RecordType::new(b"GRUP");
+    const GROUP_RECORD: RecordType = GRUP;
+
+    pub fn parsed(&self) -> Result<Group, RecordParseError<'b>> {
+        let records = RawEsmEntry::parsed_all(&self.data)?;
+
+        Ok(match self.ty {
+            GroupType::TopLevel => Group::TopLevel {
+                label: RecordType(self.label),
+                records,
+            },
+            GroupType::WorldChildren => Group::WorldChildren {
+                world: FormId(u32::from_be_bytes(self.label)).into_typed(),
+                records,
+            },
+            GroupType::InteriorCellBlock => Group::InteriorCellBlock {
+                cell_block_number: i32::from_be_bytes(self.label),
+                records,
+            },
+            GroupType::InteriorCellSubBlock => Group::InteriorCellSubBlock {
+                cell_sub_block_number: i32::from_be_bytes(self.label),
+                records,
+            },
+            GroupType::ExteriorCellBlock => Group::ExteriorCellBlock {
+                y: self.label[0],
+                x: self.label[1],
+                records,
+            },
+            GroupType::ExteriorCellSubBlock => Group::ExteriorCellSubBlock {
+                y: self.label[0],
+                x: self.label[1],
+                records,
+            },
+            GroupType::CellChildren => Group::CellChildren {
+                cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
+                records,
+            },
+            GroupType::TopicChildren => Group::TopicChildren {
+                cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
+                records,
+            },
+            GroupType::CellPersistentChildren => Group::CellPersistentChildren {
+                cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
+                records,
+            },
+            GroupType::CellTemporaryChildren => Group::CellTemporaryChildren {
+                cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
+                records,
+            },
+            GroupType::CellVisibleDistantChildren => Group::CellVisibleDistantChildren {
+                cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
+                records,
+            },
+        })
+    }
 
     pub fn parse(input: &[u8]) -> IResult<&[u8], RawGroup<'_>> {
         let (input, size) = le_u32(input)?;
-        let (input, label) = le_u32(input)?;
+        let (input, label) = take4(input)?;
         let (input, ty) = enum_value::<GroupType>(input)?;
         let (input, stamp) = le_u16(input)?;
         let (input, _unknown) = take(6usize)(input)?;
@@ -265,33 +346,58 @@ impl RawGroup<'_> {
     }
 
     /// Parses the inner esm entries of this group
-    pub fn parse_inner(&self) -> IResult<&[u8], Vec<EsmEntry>> {
-        EsmEntry::parse_all(self.data)
+    pub fn parse_inner(&self) -> IResult<&[u8], Vec<RawEsmEntry>> {
+        RawEsmEntry::parse_all(self.data)
     }
 }
 
 /// Raw record within the file
-pub enum EsmEntry<'a> {
+pub enum RawEsmEntry<'a> {
     Record(RawRecord<'a>),
     Group(RawGroup<'a>),
 }
 
-impl EsmEntry<'_> {
-    pub fn parse_all(input: &[u8]) -> IResult<&[u8], Vec<EsmEntry<'_>>> {
+impl<'b> RawEsmEntry<'b> {
+    pub fn parsed(&self) -> Result<EsmEntry, RecordParseError<'b>> {
+        match self {
+            RawEsmEntry::Record(record) => record.parsed().map(EsmEntry::Record),
+            RawEsmEntry::Group(group) => group.parsed().map(EsmEntry::Group),
+        }
+    }
+
+    pub fn parsed_all(input: &[u8]) -> Result<Vec<EsmEntry>, RecordParseError<'_>> {
+        let (_, raw_records) = Self::parse_all(input)?;
+
+        let mut records: Vec<EsmEntry> = Vec::with_capacity(raw_records.len());
+        for raw_record in raw_records {
+            let record = match raw_record.parsed() {
+                Ok(value) => value,
+                Err(err) => {
+                    // TODO: Err
+                    continue;
+                }
+            };
+            records.push(record)
+        }
+
+        Ok(records)
+    }
+
+    pub fn parse_all(input: &[u8]) -> IResult<&[u8], Vec<RawEsmEntry<'_>>> {
         all_consuming(many0(Self::parse))(input)
     }
 
-    pub fn parse(input: &[u8]) -> IResult<&[u8], EsmEntry<'_>> {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], RawEsmEntry<'_>> {
         let (input, ty) = RecordType::parse(input)?;
 
         if ty == RawGroup::GROUP_RECORD {
             RawGroup::parse(input)
                 // Convert into plugin entry
-                .map(|(input, group)| (input, EsmEntry::Group(group)))
+                .map(|(input, group)| (input, RawEsmEntry::Group(group)))
         } else {
             RawRecord::parse(input, ty)
                 // Convert into plugin entry
-                .map(|(input, group)| (input, EsmEntry::Record(group)))
+                .map(|(input, group)| (input, RawEsmEntry::Record(group)))
         }
     }
 }
@@ -634,26 +740,24 @@ where
 fn test_parse() {
     let bytes = std::fs::read("../Data/FalloutNV.esm").unwrap();
 
-    let (input, header) = EsmEntry::parse(&bytes).unwrap();
+    let (input, header) = RawEsmEntry::parse(&bytes).unwrap();
 
     let header = match header {
-        EsmEntry::Record(record) => record.parse_record::<TES4>(),
-        EsmEntry::Group(_) => panic!("Expected first entry to be a header"),
+        RawEsmEntry::Record(record) => record.parse_record::<TES4>(),
+        RawEsmEntry::Group(_) => panic!("Expected first entry to be a header"),
     }
     .unwrap();
 
     dbg!(&header);
 
-    let (_, records): (&[u8], Vec<EsmEntry>) = EsmEntry::parse_all(&input).unwrap();
+    let (_, records): (&[u8], Vec<RawEsmEntry>) = RawEsmEntry::parse_all(&input).unwrap();
 
     let scripts = records
         .iter()
         .filter_map(|value| match value {
-            EsmEntry::Record(_) => None,
-            EsmEntry::Group(group) => {
-                if group.ty == GroupType::TopLevel
-                    && group.label.to_le_bytes() == RecordType::new(b"SCPT").0
-                {
+            RawEsmEntry::Record(_) => None,
+            RawEsmEntry::Group(group) => {
+                if group.ty == GroupType::TopLevel && group.label == RecordType::new(b"SCPT").0 {
                     Some(group.data)
                 } else {
                     None
@@ -663,13 +767,13 @@ fn test_parse() {
         .next()
         .unwrap();
 
-    let scripts: Vec<SCPT> = EsmEntry::parse_all(scripts)
+    let scripts: Vec<SCPT> = RawEsmEntry::parse_all(scripts)
         .unwrap()
         .1
         .into_iter()
         .filter_map(|value| match value {
-            EsmEntry::Record(record) => Some(record.parse_record::<SCPT>().unwrap()),
-            EsmEntry::Group(group) => None,
+            RawEsmEntry::Record(record) => Some(record.parse_record::<SCPT>().unwrap()),
+            RawEsmEntry::Group(group) => None,
         })
         .collect();
 

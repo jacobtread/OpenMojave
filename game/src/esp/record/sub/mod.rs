@@ -14,6 +14,7 @@ pub mod sound_level;
 pub mod xnam;
 
 // Record type
+pub const GRUP: RecordType = RecordType::new(b"GRUP");
 pub const ACHR: RecordType = RecordType::new(b"ACHR");
 pub const ACRE: RecordType = RecordType::new(b"ACRE");
 pub const ADDN: RecordType = RecordType::new(b"ADDN");

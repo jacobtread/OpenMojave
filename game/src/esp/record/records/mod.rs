@@ -247,7 +247,7 @@ pub enum ParsedRecord {
 impl ParsedRecord {
     pub fn parse<'a, 'b>(record: &'a RawRecord<'b>) -> Result<Self, RecordParseError<'b>> {
         use crate::esp::record::sub::*;
-        let mut parser = &mut RecordParser::new(record)?;
+        let parser = &mut RecordParser::new(record)?;
 
         Ok(match record.ty {
             ACHR => Self::ACHR(Box::new(Record::parse(parser)?)),
