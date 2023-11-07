@@ -25,8 +25,7 @@ impl Record for DOOR {
         let editor_id: EditorId = parser.parse(EDID)?;
         let object_bounds: ObjectBounds = parser.parse(OBND)?;
         let name: Option<String> = parser.try_parse(FULL)?;
-        let model_data: ModelData = ModelData::parse_first(parser)?
-            .ok_or_else(|| RecordParseError::Custom("DOOR missing model data".to_string()))?;
+        let model_data: ModelData = ModelData::require(parser)?;
         let script: Option<TypedFormId<SCPT>> = parser.try_parse(SCRI)?;
         let destruction_data: Option<DestructionData> = DestructionData::parse_next(parser)?;
         let sound_open: Option<TypedFormId<SOUN>> = parser.try_parse(SNAM)?;

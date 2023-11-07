@@ -256,3 +256,4 @@ pub const RCIL: RecordType = RecordType::new(b"RCIL");
 pub const RCQY: RecordType = RecordType::new(b"RCQY");
 pub const RCOD: RecordType = RecordType::new(b"RCOD");
 pub const DNAM: RecordType = RecordType::new(b"DNAM");
+pub const DAT2: RecordType = RecordType::new(b"DAT2");
