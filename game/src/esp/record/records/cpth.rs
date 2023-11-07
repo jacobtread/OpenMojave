@@ -18,7 +18,7 @@ impl Record for CPTH {
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;
-        let conditions: Vec<CTDA> = parser.try_parse(CTDA)?;
+        let conditions: Vec<CTDA> = parser.try_parse_many(CTDA)?;
         let related_camera_paths: Option<RelatedCameraPaths> = parser.try_parse(ANAM)?;
         let camera_zoom: CameraZoom = parser.parse(DATA)?;
         let camera_shots: Vec<TypedFormId<CAMS>> = parser.try_parse_many(SNAM)?;
