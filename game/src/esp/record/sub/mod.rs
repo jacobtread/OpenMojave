@@ -278,3 +278,4 @@ pub const XCAS: RecordType = RecordType::new(b"XCAS");
 pub const XCMT: RecordType = RecordType::new(b"XCMT");
 pub const XCMO: RecordType = RecordType::new(b"XCMO");
 pub const LTMP: RecordType = RecordType::new(b"LTMP");
+pub const WLST: RecordType = RecordType::new(b"WLST");
