@@ -8,7 +8,7 @@ pub struct ECZN {
 }
 
 impl Record for ECZN {
-    const TYPE: RecordType = RecordType::new(b"ECZN");
+    const TYPE: RecordType = ECZN;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

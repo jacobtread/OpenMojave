@@ -7,7 +7,7 @@ pub struct DIAL {
 }
 
 impl Record for DIAL {
-    const TYPE: RecordType = RecordType::new(b"DIAL");
+    const TYPE: RecordType = DIAL;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()

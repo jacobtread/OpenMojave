@@ -19,7 +19,7 @@ pub struct DOOR {
 }
 
 impl Record for DOOR {
-    const TYPE: RecordType = RecordType::new(b"DOOR");
+    const TYPE: RecordType = DOOR;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

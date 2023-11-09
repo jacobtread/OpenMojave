@@ -7,7 +7,7 @@ pub struct CSTY {
 }
 
 impl Record for CSTY {
-    const TYPE: RecordType = RecordType::new(b"CSTY");
+    const TYPE: RecordType = CSTY;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()

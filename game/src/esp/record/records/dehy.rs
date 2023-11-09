@@ -8,7 +8,7 @@ pub struct DEHY {
 }
 
 impl Record for DEHY {
-    const TYPE: RecordType = RecordType::new(b"DEHY");
+    const TYPE: RecordType = DEHY;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         let editor_id: EditorId = parser.parse(EDID)?;

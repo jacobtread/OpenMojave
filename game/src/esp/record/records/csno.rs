@@ -5,7 +5,7 @@ use super::prelude::*;
 pub struct CSNO {}
 
 impl Record for CSNO {
-    const TYPE: RecordType = RecordType::new(b"CSNO");
+    const TYPE: RecordType = CSNO;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()

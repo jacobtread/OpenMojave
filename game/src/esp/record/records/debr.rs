@@ -7,7 +7,7 @@ pub struct DEBR {
 }
 
 impl Record for DEBR {
-    const TYPE: RecordType = RecordType::new(b"DEBR");
+    const TYPE: RecordType = DEBR;
 
     fn parse<'b>(parser: &mut RecordParser<'_, 'b>) -> Result<Self, RecordParseError<'b>> {
         todo!()
