@@ -52,8 +52,14 @@ pub fn parse_string(input: &[u8]) -> IResult<&[u8], String> {
 }
 
 /// Takes 4 bytes from the input returning them as a fixed length array
+#[inline]
 pub fn take4(input: &[u8]) -> IResult<&[u8], [u8; 4]> {
-    map_res(take(4usize), TryInto::try_into)(input)
+    take_bytes_const(input)
+}
+
+/// Takes 4 bytes from the input returning them as a fixed length array
+pub fn take_bytes_const<const C: usize>(input: &[u8]) -> IResult<&[u8], [u8; C]> {
+    map_res(take(C), TryInto::try_into)(input)
 }
 
 bitflags! {
