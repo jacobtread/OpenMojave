@@ -48,7 +48,7 @@ impl Record for CELL {
 
         parser.skip_type(XCET);
 
-        let encounter_zone: Option<TypedFormId<IMGS>> = parser.try_parse(XEZN)?;
+        let encounter_zone: Option<TypedFormId<ECZN>> = parser.try_parse(XEZN)?;
         let climate: Option<TypedFormId<CLMT>> = parser.try_parse(XCCM)?;
         let water: Option<TypedFormId<WATR>> = parser.try_parse(XCWT)?;
         let owner: Option<FormId> = parser.try_parse(XOWN)?;
@@ -71,7 +71,7 @@ impl Record for CELL {
             water_noise_texture,
             regions,
             image_space,
-            encounter_zone: todo!(),
+            encounter_zone,
             climate,
             water,
             owner,
