@@ -7,7 +7,7 @@ This is intended to be an open-source re-implementation of Fallout: New Vegas th
 
 I'm creating this in order to allow the game to take advantage of newer hardware as the game is still a 32bit game and is slowly running into issues with newer hardware as it ages.
 
-I am writing this using *Rust* and the [Fyrox](https://github.com/FyroxEngine/Fyro) game engine, I intend for it to be a semi drop in replacement for the original game *give or take*
+I am writing this using *Rust*, I intend for it to be a semi drop in replacement for the original game *give or take*
 
 
 I've started working on getting the basic menu working which you can see below:

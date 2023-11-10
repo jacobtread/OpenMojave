@@ -17,6 +17,8 @@ mod esp;
 mod font;
 mod menu;
 
+pub mod engine;
+
 pub struct GameConstructor;
 
 impl PluginConstructor for GameConstructor {
