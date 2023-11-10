@@ -5,17 +5,11 @@ edition = "2021"
 resolver = "2"
 
 [dependencies]
-# Window library
-winit = { version = "0.29", features = ["rwh_05"] }
-
-# Rendering library
-wgpu = "0.18"
-
-# Math
-nalgebra = "0.32"
+# Game engine
+bevy = { version = "0.12.0", features = ["dynamic_linking"] }
 
 # Physics
-rapier3d = { version = "0.17", features = ["simd-stable"] }
+bevy_rapier3d = { version = "0.23", features = ["simd-stable"] }
 
 # Logging
 log = "0.4"
@@ -33,15 +27,6 @@ bytemuck = { version = "1", features = ["derive"] }
 # Serialization / Deserialization
 serde = { version = "1", features = ["derive"] }
 serde_ini = "0.2"
-
-# Performance libs
-fxhash = "0.2.1"
-
-# Async
-pollster = "0.3.0"
-
-# ECS
-bevy_ecs = "0.12"
 
 # Optimize engine dependencies in debug mode
 [profile.dev.package."*"]
