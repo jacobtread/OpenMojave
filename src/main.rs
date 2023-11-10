@@ -1,4 +1,5 @@
 use bevy_ecs::{prelude::*, system::RunSystemOnce};
+use constants::VERSION;
 use engine::{
     events::{KeyboardEvent, MouseEvent, WindowResizeEvent},
     renderer::RenderContext,
@@ -25,7 +26,7 @@ fn main() {
 
     // Create the window
     let window = WindowBuilder::new()
-        .with_title("Open Mojave")
+        .with_title(format!("Open Mojave v{}", VERSION))
         .with_inner_size(Size::Logical(LogicalSize::new(
             WINDOW_DEFAULT_WIDTH,
             WINDOW_DEFAULT_HEIGHT,
