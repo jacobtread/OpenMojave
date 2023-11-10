@@ -1,10 +1,15 @@
-use engine::Engine;
+use bevy_ecs::{prelude::*, system::RunSystemOnce};
+use engine::{
+    events::{KeyboardEvent, MouseEvent, WindowResizeEvent},
+    renderer::RenderContext,
+    systems::schedules::{BeforeUpdate, Render, Startup, Update},
+};
 use log::{debug, error};
 use winit::{
     dpi::{LogicalSize, Size},
-    event::{Event, WindowEvent},
+    event::{DeviceEvent, ElementState, Event, WindowEvent},
     event_loop::EventLoop,
-    window::WindowBuilder,
+    window::{Window, WindowBuilder},
 };
 
 use crate::constants::{WINDOW_DEFAULT_HEIGHT, WINDOW_DEFAULT_WIDTH};
@@ -17,6 +22,8 @@ fn main() {
     utils::logging::setup_logger(log::LevelFilter::Debug);
 
     let event_loop = EventLoop::new().expect("Failed to create event loop");
+
+    // Create the window
     let window = WindowBuilder::new()
         .with_title("Open Mojave")
         .with_inner_size(Size::Logical(LogicalSize::new(
@@ -26,49 +33,97 @@ fn main() {
         .build(&event_loop)
         .expect("Failed to create window");
 
-    let mut engine = Engine::new(window);
+    // Create the render context from the window
+    let render_context: RenderContext = pollster::block_on(RenderContext::new(&window));
+
+    let mut world = World::default();
+
+    // Add render context as a resource
+    world.insert_resource(render_context);
+
+    // Run the startup schedule
+    {
+        let mut schedule = Schedule::new(Startup);
+        schedule.add_systems((
+            // Initialize
+            engine::systems::init::init,
+        ));
+        schedule.run(&mut world);
+    }
+
+    // Create before update schedule
+    {
+        let mut schedule = Schedule::new(BeforeUpdate);
+        // schedule.add_systems((
+        // ));
+
+        world.add_schedule(schedule);
+    }
+
+    // Create update schedule
+    {
+        let mut schedule = Schedule::new(Update);
+        // schedule.add_systems((
+        // ));
+
+        world.add_schedule(schedule);
+    }
+
+    // Create render schedule
+    {
+        let mut schedule = Schedule::new(Render);
+        // schedule.add_systems((
+        // ));
+
+        world.add_schedule(schedule);
+    }
 
     event_loop
-        .run(move |event, elwt| match event {
-            Event::WindowEvent { window_id, event }
-                if window_id == engine.render_ctx.window.id() =>
-            {
-                match event {
-                    WindowEvent::CloseRequested => elwt.exit(),
-                    WindowEvent::Resized(size) => {
-                        // TODO: Window resized
-                        engine.render_ctx.resize(size)
-                    }
-
-                    WindowEvent::RedrawRequested => {
-                        engine.render_ctx.update();
-                        match engine.render_ctx.render() {
-                            Ok(_) => {}
-                            // Reconfigure the surface if lost
-                            Err(wgpu::SurfaceError::Lost) => {
-                                engine.render_ctx.resize(engine.render_ctx.size)
-                            }
-                            // The system is out of memory, we should probably quit
-                            Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
-                            // All other errors (Outdated, Timeout) should be resolved by the next frame
-                            Err(e) => error!("{:?}", e),
+        .run(move |event, elwt| {
+            match event {
+                Event::WindowEvent { window_id, event } if window_id == window.id() => {
+                    match event {
+                        WindowEvent::CloseRequested => elwt.exit(),
+                        WindowEvent::Resized(new_size) => {
+                            world.send_event(WindowResizeEvent { new_size })
                         }
-                        // TODO: render here
-                    }
-                    _ => {}
-                }
-            }
-            Event::DeviceEvent {
-                device_id: _,
-                event: _,
-            } => {}
-            Event::AboutToWait => {
-                // TODO: Lag updates
-                // TODO: Redraw
-                engine.render_ctx.window.request_redraw();
-            }
+                        WindowEvent::MouseInput { state, button, .. } => {
+                            world.send_event(MouseEvent::Button {
+                                button,
+                                pressed: state == ElementState::Pressed,
+                            })
+                        }
+                        WindowEvent::MouseWheel { delta, phase, .. } => {
+                            world.send_event(MouseEvent::Scroll { delta, phase })
+                        }
 
-            _ => {}
+                        WindowEvent::KeyboardInput { event, .. } => {
+                            world.send_event(KeyboardEvent {
+                                key: event.logical_key,
+                                pressed: event.state == ElementState::Pressed,
+                            })
+                        }
+                        WindowEvent::RedrawRequested => {
+                            world.run_schedule(BeforeUpdate);
+                            world.run_schedule(Update);
+                            world.run_schedule(Render);
+                        }
+                        _ => {}
+                    }
+                }
+                // Mouse moved
+                Event::DeviceEvent {
+                    event: DeviceEvent::MouseMotion { delta },
+                    ..
+                } => world.send_event(MouseEvent::Move { delta }),
+                Event::AboutToWait => {
+                    // TODO: Lag updates
+
+                    window.request_redraw();
+                }
+
+                _ => {}
+            }
         })
         .unwrap();
 }

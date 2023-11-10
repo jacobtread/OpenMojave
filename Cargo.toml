@@ -28,6 +28,7 @@ bitflags = "2.4.1"
 num_enum = "0.7"
 thiserror = "1"
 parking_lot = "0.12"
+bytemuck = { version = "1", features = ["derive"] }
 
 # Serialization / Deserialization
 serde = { version = "1", features = ["derive"] }
@@ -38,6 +39,9 @@ fxhash = "0.2.1"
 
 # Async
 pollster = "0.3.0"
+
+# ECS
+bevy_ecs = "0.12"
 
 # Optimize engine dependencies in debug mode
 [profile.dev.package."*"]
