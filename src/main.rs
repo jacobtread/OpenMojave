@@ -3,7 +3,9 @@ use assets::bsa::BsaPlugin;
 use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
+    window::{WindowResolution, WindowTheme},
 };
+use constants::VERSION;
 
 pub mod assets;
 pub mod constants;
@@ -21,6 +23,15 @@ fn main() {
                 .add_before::<AssetPlugin, BsaPlugin>(BsaPlugin)
                 // Custom window settings
                 .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: format!("Open Mojave v{}", VERSION),
+                        resolution: WindowResolution::new(
+                            WINDOW_DEFAULT_WIDTH,
+                            WINDOW_DEFAULT_HEIGHT,
+                        ),
+                        window_theme: Some(WindowTheme::Dark),
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 })
                 // Update logging
