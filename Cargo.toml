@@ -11,22 +11,20 @@ bevy = { version = "0.12.0", features = ["dynamic_linking"] }
 # Physics
 bevy_rapier3d = { version = "0.23", features = ["simd-stable"] }
 
-# Logging
-log = "0.4"
-fern = "0.6"
-log-panics = { version = "2", features = ["with-backtrace"] }
-humantime = "2.1.0"
-
 # Utils
 bitflags = "2.4.1"
 num_enum = "0.7"
 thiserror = "1"
 parking_lot = "0.12"
 bytemuck = { version = "1", features = ["derive"] }
+libflate = "2"
+byteorder = "1.5"
+futures = "0.3"
 
 # Serialization / Deserialization
 serde = { version = "1", features = ["derive"] }
 serde_ini = "0.2"
+bsa = "0.2.1"
 
 # Optimize engine dependencies in debug mode
 [profile.dev.package."*"]
