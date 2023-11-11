@@ -20,6 +20,7 @@ bytemuck = { version = "1", features = ["derive"] }
 libflate = "2"
 byteorder = "1.5"
 futures = "0.3"
+binrw = "0.13"
 
 # Serialization / Deserialization
 serde = { version = "1", features = ["derive"] }
