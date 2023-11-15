@@ -10,6 +10,7 @@ use constants::VERSION;
 pub mod assets;
 pub mod constants;
 pub mod utils;
+pub mod esp;
 
 fn main() {
     let config = utils::config::load_config();
