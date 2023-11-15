@@ -13,7 +13,7 @@ use self::records::cell::CELL;
 use self::records::dial::DIAL;
 use self::records::prelude::TypedFormId;
 use self::records::wrld::WRLD;
-use self::records::ParsedRecord;
+use self::records::RecordValue;
 
 use super::shared::FormId;
 use crate::esp::record::records::scpt::SCPT;
@@ -131,8 +131,8 @@ pub struct OwnedRawRecord {
 
 impl<'b> RawRecord<'b> {
     #[inline]
-    pub fn parsed<'a>(&'a self) -> Result<ParsedRecord, RecordParseError<'b>> {
-        ParsedRecord::parse(self)
+    pub fn parsed<'a>(&'a self) -> Result<RecordValue, RecordParseError<'b>> {
+        RecordValue::parse(self)
     }
 
     pub fn parse_record<'a, R: Record>(&'a self) -> Result<R, RecordParseError<'b>> {
@@ -221,57 +221,27 @@ pub struct RawGroup<'a> {
     pub data: &'a [u8],
 }
 
-pub enum Group {
-    TopLevel {
-        label: RecordType,
-        records: Vec<EsmEntry>,
-    },
-    WorldChildren {
-        world: TypedFormId<WRLD>,
-        records: Vec<EsmEntry>,
-    },
-    InteriorCellBlock {
-        cell_block_number: i32,
-        records: Vec<EsmEntry>,
-    },
-    InteriorCellSubBlock {
-        cell_sub_block_number: i32,
-        records: Vec<EsmEntry>,
-    },
-    ExteriorCellBlock {
-        y: u8,
-        x: u8,
-        records: Vec<EsmEntry>,
-    },
-    ExteriorCellSubBlock {
-        y: u8,
-        x: u8,
-        records: Vec<EsmEntry>,
-    },
-    CellChildren {
-        cell: TypedFormId<CELL>,
-        records: Vec<EsmEntry>,
-    },
-    TopicChildren {
-        cell: TypedFormId<DIAL>,
-        records: Vec<EsmEntry>,
-    },
-    CellPersistentChildren {
-        cell: TypedFormId<CELL>,
-        records: Vec<EsmEntry>,
-    },
-    CellTemporaryChildren {
-        cell: TypedFormId<CELL>,
-        records: Vec<EsmEntry>,
-    },
-    CellVisibleDistantChildren {
-        cell: TypedFormId<CELL>,
-        records: Vec<EsmEntry>,
-    },
+pub struct Group {
+    pub label: GroupLabel,
+    pub records: Vec<EsmEntry>,
+}
+
+pub enum GroupLabel {
+    TopLevel { ty: RecordType },
+    WorldChildren { world: TypedFormId<WRLD> },
+    InteriorCellBlock { cell_block_number: i32 },
+    InteriorCellSubBlock { cell_sub_block_number: i32 },
+    ExteriorCellBlock { y: u8, x: u8 },
+    ExteriorCellSubBlock { y: u8, x: u8 },
+    CellChildren { cell: TypedFormId<CELL> },
+    TopicChildren { cell: TypedFormId<DIAL> },
+    CellPersistentChildren { cell: TypedFormId<CELL> },
+    CellTemporaryChildren { cell: TypedFormId<CELL> },
+    CellVisibleDistantChildren { cell: TypedFormId<CELL> },
 }
 
 pub enum EsmEntry {
-    Record(ParsedRecord),
+    Record(RecordValue),
     Group(Group),
 }
 
@@ -282,54 +252,45 @@ impl<'b> RawGroup<'b> {
     pub fn parsed(&self) -> Result<Group, RecordParseError<'b>> {
         let records = RawEsmEntry::parsed_all(&self.data)?;
 
-        Ok(match self.ty {
-            GroupType::TopLevel => Group::TopLevel {
-                label: RecordType(self.label),
-                records,
+        let label = match self.ty {
+            GroupType::TopLevel => GroupLabel::TopLevel {
+                ty: RecordType(self.label),
             },
-            GroupType::WorldChildren => Group::WorldChildren {
+            GroupType::WorldChildren => GroupLabel::WorldChildren {
                 world: FormId(u32::from_be_bytes(self.label)).into_typed(),
-                records,
             },
-            GroupType::InteriorCellBlock => Group::InteriorCellBlock {
+            GroupType::InteriorCellBlock => GroupLabel::InteriorCellBlock {
                 cell_block_number: i32::from_be_bytes(self.label),
-                records,
             },
-            GroupType::InteriorCellSubBlock => Group::InteriorCellSubBlock {
+            GroupType::InteriorCellSubBlock => GroupLabel::InteriorCellSubBlock {
                 cell_sub_block_number: i32::from_be_bytes(self.label),
-                records,
             },
-            GroupType::ExteriorCellBlock => Group::ExteriorCellBlock {
+            GroupType::ExteriorCellBlock => GroupLabel::ExteriorCellBlock {
                 y: self.label[0],
                 x: self.label[1],
-                records,
             },
-            GroupType::ExteriorCellSubBlock => Group::ExteriorCellSubBlock {
+            GroupType::ExteriorCellSubBlock => GroupLabel::ExteriorCellSubBlock {
                 y: self.label[0],
                 x: self.label[1],
-                records,
             },
-            GroupType::CellChildren => Group::CellChildren {
+            GroupType::CellChildren => GroupLabel::CellChildren {
                 cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
-                records,
             },
-            GroupType::TopicChildren => Group::TopicChildren {
+            GroupType::TopicChildren => GroupLabel::TopicChildren {
                 cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
-                records,
             },
-            GroupType::CellPersistentChildren => Group::CellPersistentChildren {
+            GroupType::CellPersistentChildren => GroupLabel::CellPersistentChildren {
                 cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
-                records,
             },
-            GroupType::CellTemporaryChildren => Group::CellTemporaryChildren {
+            GroupType::CellTemporaryChildren => GroupLabel::CellTemporaryChildren {
                 cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
-                records,
             },
-            GroupType::CellVisibleDistantChildren => Group::CellVisibleDistantChildren {
+            GroupType::CellVisibleDistantChildren => GroupLabel::CellVisibleDistantChildren {
                 cell: FormId(u32::from_be_bytes(self.label)).into_typed(),
-                records,
             },
-        })
+        };
+
+        Ok(Group { label, records })
     }
 
     pub fn parse(input: &[u8]) -> IResult<&[u8], RawGroup<'_>> {

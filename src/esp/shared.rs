@@ -78,7 +78,7 @@ impl<T> FromRecordBytes for TypedFormId<T> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct FormId(pub u32);
 
 impl FromRecordBytes for FormId {
