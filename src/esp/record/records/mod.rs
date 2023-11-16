@@ -135,7 +135,7 @@ pub mod weap;
 pub mod wrld;
 pub mod wthr;
 
-pub enum ParsedRecord {
+pub enum RecordValue {
     ACHR(Box<achr::ACHR>),
     ACRE(Box<acre::ACRE>),
     ACTI(Box<acti::ACTI>),
@@ -244,7 +244,7 @@ pub enum ParsedRecord {
     WTHR(Box<wthr::WTHR>),
 }
 
-impl ParsedRecord {
+impl RecordValue {
     pub fn parse<'a, 'b>(record: &'a RawRecord<'b>) -> Result<Self, RecordParseError<'b>> {
         use crate::esp::record::sub::*;
         let parser = &mut RecordParser::new(record)?;

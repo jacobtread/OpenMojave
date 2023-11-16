@@ -1,49 +1,68 @@
-use std::any::{Any, TypeId};
+use std::{
+    any::{Any, TypeId},
+    sync::Arc,
+};
 
 use bevy::utils::HashMap;
+use parking_lot::Mutex;
 
 use super::record::{
-    records::{prelude::FormId, RecordValue},
-    FromRecordBytes, Group, RawEsmEntry,
+    records::{
+        acti::ACTI, alch::ALCH, arma::ARMA, armo::ARMO, book::BOOK, bptd::BPTD, cell::CELL,
+        clas::CLAS, cont::CONT, crea::CREA, dial::DIAL, door::DOOR, ench::ENCH, fact::FACT,
+        glob::GLOB, gmst::GMST, ingr::INGR, land::LAND, ligh::LIGH, ltex::LTEX, lvlc::LVLC,
+        lvli::LVLI, mgef::MGEF, misc::MISC, npc::NPC_, prelude::FormId, race::RACE, regn::REGN,
+        scpt::SCPT, soun::SOUN, spel::SPEL, stat::STAT, weap::WEAP, RecordValue,
+    },
+    FromRecordBytes, Group, RawEsmEntry, Record, RecordType,
 };
 use bevy::log::warn;
 
-pub struct GlobalRecordStore {
-    records: HashMap<FormId, RecordValue>,
-    groups: HashMap<FormId, Group>,
+pub struct EsmStore {
+    activators: Store<ACTI>,
+    ingestibles: Store<ALCH>,
+    armors: Store<ARMO>,
+    body_parts: Store<BPTD>,
+    books: Store<BOOK>,
+    classes: Store<CLAS>,
+    containers: Store<CONT>,
+    creatures: Store<CREA>,
+    dialogue: Store<DIAL>,
+    doors: Store<DOOR>,
+    enchants: Store<ENCH>,
+    factions: Store<FACT>,
+    globals: Store<GLOB>,
+    ingredients: Store<INGR>,
+    creature_lists: Store<LVLC>,
+    item_lists: Store<LVLI>,
+    lights: Store<LIGH>,
+    misc_items: Store<MISC>,
+    npcs: Store<NPC_>,
+    races: Store<RACE>,
+    regions: Store<REGN>,
+    sounds: Store<SOUN>,
+    spells: Store<SPEL>,
+    statics: Store<STAT>,
+    weapons: Store<WEAP>,
+    game_settings: Store<GMST>,
+    scripts: Store<SCPT>,
+
+    cells: Store<CELL>,
+    lands: Store<LAND>,
+    land_textures: Store<LTEX>,
+    magic_effects: Store<MGEF>,
 }
 
-impl GlobalRecordStore {
-    fn from_esm(&mut self, values: Vec<RawEsmEntry>) {
-        for value in values {
-            match value {
-                RawEsmEntry::Record(record) => {
-                    let parsed = match record.parsed() {
-                        Ok(value) => value,
-                        Err(err) => {
-                            warn!(
-                                "Failed to parse record ({}: {}): {}",
-                                record.form_id, record.ty, err
-                            );
-                            continue;
-                        }
-                    };
+#[derive(Clone)]
+pub struct Store<R: Record> {
+    inner: Arc<StoreInner<R>>,
+}
 
-                    self.mapping.insert(FormId(record.form_id), parsed);
-                }
-                RawEsmEntry::Group(group) => {
-                    let group = match group.parsed() {
-                        Ok(value) => value,
-                        Err(err) => {
-                            warn!(
-                                "Failed to parse group ({}: {}): {}",
-                                group.label, group.ty, err
-                            );
-                            continue;
-                        }
-                    };
-                }
-            }
-        }
-    }
+/// Inner portion of the store thats behind an arc
+/// so it can be cheaply cloned
+pub struct StoreInner<R: Record> {
+    // Store for static values loaded from files
+    values_static: HashMap<String, R>,
+    /// Stores for dynamic values created at runtime
+    values_dynamic: Mutex<HashMap<String, R>>,
 }
